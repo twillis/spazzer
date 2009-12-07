@@ -9,14 +9,19 @@ from alchemyextra.schema import id_column
 
 Base = declarative_base()
 
+class MountPoint(Base):
+    __tablename__ = "mount_points"
+    id = id_column()
+    mount = Column(Unicode(1024), unique = True)
+
 class FileRecord(Base):
     __tablename__ = "files"
     id = id_column()
-    file_name = Column(Unicode(1024), unique = True)
-    artist = Column(Unicode(255), nullable = True)
-    album = Column(Unicode(255), nullable = True)
-    title = Column(Unicode(255), nullable = True)
-    year = Column(Integer, nullable = True)
+    file_name = Column(Unicode(1024), unique = True, index = True)
+    artist = Column(Unicode(255), nullable = True, index = True)
+    album = Column(Unicode(255), nullable = True, index = True)
+    title = Column(Unicode(255), nullable = True, index = True)
+    year = Column(Integer, nullable = True, index = True)
     track = Column(Integer, nullable = True)
     create_date = Column(DateTime(), nullable = False)
     modify_date = Column(DateTime(), nullable = False)

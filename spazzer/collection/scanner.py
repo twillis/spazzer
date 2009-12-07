@@ -12,13 +12,14 @@ import time
 from paste.script.command import Command, BadCommand
 from paste.deploy import appconfig
 import sys
-from .model import FileRecord
+from .model import FileRecord, MountPoint
 import manage
 
 F_MP3 = ".mp3"
 F_FLAC = ".flac"
 VALID_XTNS = [F_MP3, F_FLAC]
 FS_ENC = sys.getfilesystemencoding()
+
 def get_metadata_mp3(f):
     return dict(EasyID3(f).items())
 
@@ -42,12 +43,13 @@ def build_metadata_processor():
         try:
             d = processors[os.path.splitext(f)[1].lower()](f)
             stats = os.stat(f)
-            d["file"] = unicode(f, encoding = FS_ENC)
+            d["file"] =f  #unicode(f, encoding = FS_ENC)
             d["create_date"] = datetime.fromtimestamp(stats[stat.ST_CTIME])
             d["modify_date"] = datetime.fromtimestamp(stats[stat.ST_MTIME])
             return d
         except Exception as ex:
-            return dict(file=unicode(f, encoding = FS_ENC), exception=str(ex))
+#            return dict(file=unicode(f, encoding = FS_ENC), exception=str(ex))
+            return dict(file=f, exception=str(ex))
 
     return _x
 
@@ -161,7 +163,9 @@ Please specify a CONFIG_FILE"""%
         manage.init_model(session)
         
         self.errors = []
-        scanner = Scanner(["/home/twillis/music/mp3s/"], 
+        
+        scanner = Scanner([m[0] for m in \
+                               session.query(MountPoint.mount).all()], 
                           callback = self._callback,
                           last_update = self.last_modified)
         scanner()
@@ -183,11 +187,22 @@ Please specify a CONFIG_FILE"""%
                 file_name = info.pop("file")
                 create_date = info.pop("create_date")
                 modify_date = info.pop("modify_date")
-                artist = info.get("artist")[0] if "artist" in info else None
-                album = info.get("album")[0] if "album" in info else None
-                year = int(info.get("date")[0].split("-")[0]) if "date" in info else None
-                track = int(info.get("tracknumber")[0].split("/")[0]) if "tracknumber" in info else None
-                title = info.get("title")[0] if "album" in info else None
+                
+                artist = info.get("artist")[0]\
+                    if "artist" in info else None
+                
+                album = info.get("album")[0]\
+                    if "album" in info else None
+                
+                year = int(info.get("date")[0].split("-")[0])\
+                    if "date" in info else None
+                
+                track = int(info.get("tracknumber")[0].split("/")[0])\
+                    if "tracknumber" in info else None
+                
+                title = info.get("title")[0]\
+                    if "title" in info else None
+
                 rec = FileRecord.get_by_filename(file_name)
                 if not rec:
                     rec = FileRecord(file_name,
