@@ -85,13 +85,13 @@ class ArtistView(object):
 
     @classmethod
     def query(cls):
-        return FileRecord.query(FileRecord.artist)
-
+        return FileRecord.query(FileRecord.artist).filter(FileRecord.artist!=None).distinct()
+        
     @classmethod
-    def get_list(cls, criteria = None):
+    def search_list(cls, criteria = None):
         qry = cls.query()
         if criteria:
-            qry = qry.filter(FileRecord.artist.like("\%%s\%" % criteria))
+            qry = qry.filter(FileRecord.artist.like(u"\%%s\%" % criteria))
         
         results = []
         
@@ -110,6 +110,7 @@ class ArtistView(object):
             return None
 
     def __repr__(self):
+        return self.name
         return self.name.title()
 
     def get_albums(self):
@@ -121,11 +122,11 @@ class AlbumView(object):
         self.year = year
 
     def __repr__(self):
-        return "%s - %s" % (self.name.title(),self.year)
+        return u"%s - %s" % (self.name.title(),self.year)
 
     @classmethod
     def query(cls):
-        return FileRecord.query(FileRecord.album, FileRecord.year)
+        return FileRecord.query(FileRecord.album, FileRecord.year).filter(FileRecord.album != None).distinct()
 
     @classmethod
     def get(cls,name, artist = None, year = None):
@@ -147,7 +148,7 @@ class AlbumView(object):
     def get_by_artist(cls,artist):
         results = cls.query().filter(FileRecord.artist==artist).order_by(FileRecord.year).all()
         albums = []
-        if result and len(result) > 0:
+        if results and len(results) > 0:
             for result in results:
                 albums.append(cls(*result))
 
@@ -157,6 +158,20 @@ class AlbumView(object):
 
     def get_tracks(self):
         return TrackView.get_by_album(self.name)
+
+    @classmethod
+    def search_list(cls, criteria = None):
+        qry = cls.query()
+        if criteria:
+            qry = qry.filter(FileRecord.artist.like(u"\%%s\%" % criteria))
+        
+        results = []
+        
+        for result in qry.all():
+            results.append(cls(*result))
+
+        return results
+
 
 class TrackView(object):
     def __init__(self,fileRecord):
@@ -200,4 +215,4 @@ class TrackView(object):
         return getattr(self.__record, name)
 
     def __repr__(self):
-        return "%d - %s" % (self.track, self.title.title())
+        return u"%d - %s" % (self.track, self.title.title())

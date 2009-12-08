@@ -14,12 +14,14 @@ def echo(context,request):
 """ % ("%s: %s" % (context.__class__.__name__, context), request.environ)
     return Response(result)
 
-def artist_list(context, request): pass
+def artist_list(context, request):
+    items = context.list_items(request)
+    return {"items":items, "title":"list"}
 def artist_view(context, request): pass
 def album_list(context, request): pass
 def album_view(context, request): pass
 
-artist_list = echo
+#artist_list = echo
 artist_view = echo
-album_list = echo
+album_list = artist_list
 album_view = echo

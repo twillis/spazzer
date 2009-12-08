@@ -11,7 +11,8 @@
 
   <view
       for=".models.ArtistModel"
-      view=".views.artist_list"/>
+      view=".views.artist_list"
+      renderer="templates/list.pt"/>
 
   <view
       for="..collection.model.ArtistView"
@@ -19,7 +20,8 @@
 
   <view
       for=".models.AlbumModel"
-      view=".views.album_list"/>
+      view=".views.album_list"
+      renderer="templates/list.pt"/>
 
   <view
       for="..collection.model.AlbumView"
