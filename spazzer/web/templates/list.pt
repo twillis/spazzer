@@ -1,0 +1,53 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:tal="http://xml.zope.org/namespaces/tal">
+<head>
+  <title tal:content="title"></title>
+	<link type="text/css" href="${request.application_url}/static/css/custom-theme/style.css" rel="stylesheet" />
+<script type="text/javascript" src="${request.application_url}/static/js/jquery-1.3.2.min.js"></script>
+<script type="text/javascript" src="${request.application_url}/static/js/jquery-ui-1.7.2.custom.min.js"></script>
+</head>
+<style>
+	.grid .ui-selecting { background: #FECA40; }
+	.grid .ui-selected { background: #F39814; color: white; }
+	.grid, .list { list-style-type: none; margin: 0; padding: 0; }
+	.grid li { margin: 3px; padding: 1px; float: left; width: 100px; height: 80px; font-size: 1em; text-align: center; }
+	#filter-widget ul.ui-tabs-nav {font-size:48%;}
+</style>
+<body>
+  <div id="filter-widget" class="list">
+    <ul>
+      <li tal:repeat="idx in keys">
+	<a href="${request.application_url}/artists/${index[idx]}" 
+	   tal:content="idx">index</a>
+      </li>
+    </ul>
+    <div>
+      <span tal:replace="structure items"/>
+    </div>
+  </div>
+
+<script type="text/javascript">
+$(function(){
+  $("#filter-widget").tabs({show:function(){
+    $(".artist-item").each(function(idx){
+      var content = $(this).find(".artist-content").hide();
+      $(this).find(".artist-header").click(function(event){
+          event.preventDefault();
+          var link = $(event.target);
+          var url = $(link).attr("href");
+          if(!$(content).is(":visible")){
+            $.get(url,function(data){
+                        $(content).html(data);
+                    }//end ajax callback
+            );//end get
+          }//end if not visible
+          $(content).toggle();
+      });//end click
+    });//end each
+   }//end show
+  });//end tabs
+ });//end $
+</script>
+</body>
+</html>

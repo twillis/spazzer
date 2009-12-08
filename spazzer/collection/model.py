@@ -4,10 +4,29 @@ Database model for collection metadata
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.schema import Column
 from sqlalchemy.types import Unicode, Integer, DateTime
+from sqlalchemy.sql import or_
 from meta import _s
 from alchemyextra.schema import id_column
+import os
+from cStringIO import StringIO
+import zipfile
 
 Base = declarative_base()
+
+def cleanse_filename(fname):
+    fname = os.path.split(fname)[1]
+    INVALID = u"\"*/:<>?\\|"
+    VALID_RANGE = range(128)
+    result = []
+    for c in fname:
+        val = ord(c)
+        if not c in INVALID and val in VALID_RANGE:
+            result.append(c)
+        else:
+            result.append(u"_")
+    result = u"".join(result)
+    return result.replace(u" ", u"_")
+    
 
 class MountPoint(Base):
     __tablename__ = "mount_points"
@@ -75,6 +94,16 @@ class FileRecord(Base):
         self.track = track
         self.title = title
 
+    def _safe_file_name(self):
+        FMT_STR = "%s - %s - %s (%d) - %s%s"
+        return cleanse_filename(FMT_STR % (self.track,
+                                            self.artist,
+                                            self.album,
+                                            self.year,
+                                            self.title,
+                                            os.path.splitext(self.file_name)[1]))
+    safe_file_name = property(_safe_file_name)
+
 #    These have nothing to do with db persistence, column/table mapping or anything
 class ArtistView(object):
     """
@@ -91,7 +120,7 @@ class ArtistView(object):
     def search_list(cls, criteria = None):
         qry = cls.query()
         if criteria:
-            qry = qry.filter(FileRecord.artist.like(u"\%%s\%" % criteria))
+            qry = qry.filter(FileRecord.artist.like(u"%s" % criteria))
         
         results = []
         
@@ -104,7 +133,7 @@ class ArtistView(object):
     def get(cls,name):
         result = cls.query().filter(FileRecord.artist==name).first()
 
-        if len(result)>0:
+        if result and len(result)>0:
             return cls(*result)
         else:
             return None
@@ -172,7 +201,26 @@ class AlbumView(object):
 
         return results
 
+    def get_zip_file(self):
+        """
+        relying on caller to close the string io
+        """
+        io = StringIO()
+        zf = zipfile.ZipFile(io,"w")
+        try:
+            for track in self.get_tracks():
+                zf.write(track.file_name,
+                         track.safe_file_name,
+                         zipfile.ZIP_DEFLATED)
+        finally:
+            zf.close()
 
+        io.reset()
+        io.seek(0,2)
+        length = io.tell()
+        io.reset()
+        return io,length,cleanse_filename("%s - %s.zip" % (self.name, self.year))
+        
 class TrackView(object):
     def __init__(self,fileRecord):
         self.__record = fileRecord
@@ -182,8 +230,12 @@ class TrackView(object):
         return FileRecord.query()
 
     @classmethod
-    def get(cls,id):
-        return cls(cls.query().get(id))
+    def get(cls,fid):
+        print "File Id: %s" % fid
+        val = cls.query().get(fid)
+        assert val is not None
+        print "File: %s" % val
+        return cls(val)
 
     @classmethod
     def get_by_album(cls,album,artist = None):
@@ -192,7 +244,7 @@ class TrackView(object):
         if artist:
             qry = qry.filter(FileRecord.artist == artist)
 
-        results = qry.all()
+        results = qry.order_by(FileRecord.track).all()
         tracks = []
         if results and len(results)>0:
             for result in results:
@@ -216,3 +268,5 @@ class TrackView(object):
 
     def __repr__(self):
         return u"%d - %s" % (self.track, self.title.title())
+
+        

@@ -1,6 +1,7 @@
-from ..collection.model import FileRecord, MountPoint, ArtistView, AlbumView, TrackView
+from ..collection.model import FileRecord, MountPoint, ArtistView, AlbumView, TrackView, or_
 from ..collection.meta import _s
 import transaction
+import uuid
 
 class BaseModel(object):
     __modelview__ = None
@@ -12,12 +13,26 @@ class BaseModel(object):
         if self.__modelview__ is None:
             return None
 
+
+        
         if "search" in request.params:
-            search = u"\%%s\%" % request.params.get("search")
+            search = u"%%%s%%" % request.params.get("search")
         elif "start" in request.params:
-            search = u"%s\%" % request.params.get("start")
+            if request.params.get("start") == "__num__":
+                #maybe move this into collection model
+                qry_results =  self.__modelview__.query().filter(or_(*(FileRecord.artist.like("%s%%" % x) for x in xrange(0,10)))).all()
+
+                results = []
+                for qr in qry_results:
+                    results.append(ArtistView(*qr))
+
+                return results
+            else:
+                search = u"%s%%" % request.params.get("start")
+
         else:
             search = None
+
         return self.__modelview__.search_list(search)
 
 class ArtistModel(BaseModel):
@@ -65,10 +80,11 @@ class AlbumModel(BaseModel):
         else:
             search = None
         return self.__modelview__.get_by_artist(self.__parent__.name)
-
+    
 class TrackModel(BaseModel):
     __modelview__ = TrackView
     def __getitem__(self, key):
+        key = uuid.UUID(key)
         result = self.__modelview__.get(key)
         if not result:
             raise KeyError, key
@@ -90,7 +106,6 @@ class SiteModel(object):
     def __init__(self):
         self._models = {}
         self._models["artists"] = ArtistModel("artists", self)
-
         self._models["tracks"] = TrackModel("tracks", self)
         self._models["years"] = YearModel("years", self)
         self._models["admin"] = AdminModel("admin", self)
