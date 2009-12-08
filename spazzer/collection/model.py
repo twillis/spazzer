@@ -35,12 +35,13 @@ class FileRecord(Base):
         return cls.query().filter(cls.file_name == file_name).first()
 
     @classmethod
-    def query(cls,attrs = None):
+    def query(cls,*attrs):
         """
         attrs to select if None then entire class
         """
-        if not attrs:
+        if len(attrs) == 0:
             attrs = [cls]
+        print attrs
         return _s().query(*attrs)
 
     def __init__(self, file_name,create_date,modify_date,
@@ -74,3 +75,129 @@ class FileRecord(Base):
         self.track = track
         self.title = title
 
+#    These have nothing to do with db persistence, column/table mapping or anything
+class ArtistView(object):
+    """
+    Represents an Artist view of the collection
+    """
+    def __init__(self, name):
+        self.name = name
+
+    @classmethod
+    def query(cls):
+        return FileRecord.query(FileRecord.artist)
+
+    @classmethod
+    def get_list(cls, criteria = None):
+        qry = cls.query()
+        if criteria:
+            qry = qry.filter(FileRecord.artist.like("\%%s\%" % criteria))
+        
+        results = []
+        
+        for result in qry.all():
+            results.append(cls(*result))
+
+        return results
+            
+    @classmethod
+    def get(cls,name):
+        result = cls.query().filter(FileRecord.artist==name).first()
+
+        if len(result)>0:
+            return cls(*result)
+        else:
+            return None
+
+    def __repr__(self):
+        return self.name.title()
+
+    def get_albums(self):
+        return AlbumView.get_by_artist(self.name)
+
+class AlbumView(object):
+    def __init__(self, name, year):
+        self.name = name
+        self.year = year
+
+    def __repr__(self):
+        return "%s - %s" % (self.name.title(),self.year)
+
+    @classmethod
+    def query(cls):
+        return FileRecord.query(FileRecord.album, FileRecord.year)
+
+    @classmethod
+    def get(cls,name, artist = None, year = None):
+        qry = cls.query().filter(FileRecord.album==name)
+
+        if artist:
+            qry = qry.filter(FileRecord.artist == artist)
+
+        if year:
+            qry = qry.filter(FileRecord.year == year)
+        result = qry.first()
+
+        if result and len(result)>0:
+            return cls(*result)
+        else:
+            return None
+        
+    @classmethod
+    def get_by_artist(cls,artist):
+        results = cls.query().filter(FileRecord.artist==artist).order_by(FileRecord.year).all()
+        albums = []
+        if result and len(result) > 0:
+            for result in results:
+                albums.append(cls(*result))
+
+            return albums
+
+        return albums
+
+    def get_tracks(self):
+        return TrackView.get_by_album(self.name)
+
+class TrackView(object):
+    def __init__(self,fileRecord):
+        self.__record = fileRecord
+
+    @classmethod
+    def query(cls):
+        return FileRecord.query()
+
+    @classmethod
+    def get(cls,id):
+        return cls(cls.query().get(id))
+
+    @classmethod
+    def get_by_album(cls,album,artist = None):
+        qry = cls.query().filter(FileRecord.album == album)
+
+        if artist:
+            qry = qry.filter(FileRecord.artist == artist)
+
+        results = qry.all()
+        tracks = []
+        if results and len(results)>0:
+            for result in results:
+                tracks.append(cls(result))
+
+        return results
+    @classmethod
+    def get_by_artist(cls,artist):
+        results = cls.query().filter(FileRecord.artist == artist)
+        tracks = []
+        if results and len(results)>0:
+            for result in results:
+                tracks.append(cls(result))
+        return tracks
+
+    def __getattr__(self, name):
+        """
+        happy path to staying in sync with FileRecord via delegation
+        """
+        return getattr(self.__record, name)
+
+    def __repr__(self):
+        return "%d - %s" % (self.track, self.title.title())

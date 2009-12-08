@@ -4,10 +4,26 @@
   <include package="repoze.bfg.includes" />
 
   <view
-     for=".models.MyModel"
+     for=".models.SiteModel"
      view=".views.my_view"
      renderer="templates/mytemplate.pt"
      />
+
+  <view
+      for=".models.ArtistModel"
+      view=".views.artist_list"/>
+
+  <view
+      for="..collection.model.ArtistView"
+      view=".views.artist_view"/>
+
+  <view
+      for=".models.AlbumModel"
+      view=".views.album_list"/>
+
+  <view
+      for="..collection.model.AlbumView"
+      view=".views.album_view"/>
 
   <static
      name="static"

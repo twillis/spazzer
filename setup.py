@@ -9,7 +9,8 @@ CHANGES = open(os.path.join(here, 'CHANGES.txt')).read()
 requires = ['repoze.bfg', 
             'mutagen', 
             'sqlalchemy',
-            'alchemyextra']
+            'alchemyextra',
+            'zope.sqlalchemy']
 
 setup(name='spazzer',
       version='0.0',
