@@ -219,7 +219,7 @@ class AlbumView(object):
         io.seek(0,2)
         length = io.tell()
         io.reset()
-        return io,length,cleanse_filename("%s - %s.zip" % (self.name, self.year))
+        return io,cleanse_filename("%s - %s.zip" % (self.name, self.year)),length
         
 class TrackView(object):
     def __init__(self,fileRecord):
@@ -238,11 +238,14 @@ class TrackView(object):
         return cls(val)
 
     @classmethod
-    def get_by_album(cls,album,artist = None):
+    def get_by_album(cls,album,artist = None, year = None):
         qry = cls.query().filter(FileRecord.album == album)
 
         if artist:
             qry = qry.filter(FileRecord.artist == artist)
+
+        if year:
+            qry = qry.filter(FileRecord.year == year)
 
         results = qry.order_by(FileRecord.track).all()
         tracks = []
@@ -251,6 +254,7 @@ class TrackView(object):
                 tracks.append(cls(result))
 
         return results
+
     @classmethod
     def get_by_artist(cls,artist):
         results = cls.query().filter(FileRecord.artist == artist)

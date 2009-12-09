@@ -7,6 +7,7 @@
       for=".models.ArtistModel"
       view=".views.artist_list"
       renderer="templates/list.pt"/>
+
   <view
       for=".models.ArtistModel"
       view=".views.view_data"
@@ -16,7 +17,6 @@
       for=".models.ArtistModel"
       view=".views.view_artist_detail"
       name="detail"/>
-
 
   <view
       for="..collection.model.ArtistView"
@@ -28,20 +28,17 @@
       renderer="templates/list.pt"/>
 
   <view
-      for="..collection.model.AlbumView"
-      view=".views.album_view"/>
+      for=".models.DownloadModel"
+      view=".views.serve"/>
 
   <view
       for="..collection.model.AlbumView"
-      view=".views.serve_album"
-      name="download"/>
-
+      view=".views.album_view"/>
 
   <view
       for="..collection.model.FileRecord"
       view=".views.serve"
       name = "download"/>
-
 
   <static
      name="static"

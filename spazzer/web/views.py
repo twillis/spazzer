@@ -72,18 +72,16 @@ def get_artist_detail(context,request):
                            context = context, artist = artist)
 
 def serve(context,request):
-    return _serve(open(context.file_name, "rb"),
-                  context.safe_file_name,
-                  os.path.getsize(context.file_name))
-
-def serve_album(context,request):
-    zf,length,fname = context.get_zip_file()
-    try:
-        return _serve(zf,fname,length)
-    finally:
-        zf.close()
+    result = context.get_file(request)
+    if result:
+        buf,length,fname = result
+        try:
+            return _serve(buf,length,fname)
+        finally:
+            buf.close()
+    else:
+        return HTTPNotFound()
         
-
 def _serve(filebuf,filename,filesize):
     response = Response(content_type ="binary/octet-stream")
     response.headers.add("Content-Disposition",
