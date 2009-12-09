@@ -4,29 +4,9 @@
 <head>
   <title tal:content="title"></title>
 	<link type="text/css" href="${request.application_url}/static/css/custom-theme/style.css" rel="stylesheet" />
+	<link type="text/css" href="${request.application_url}/static/css/site.css" rel="stylesheet" />
 <script type="text/javascript" src="${request.application_url}/static/js/jquery-1.3.2.min.js"></script>
 <script type="text/javascript" src="${request.application_url}/static/js/jquery-ui-1.7.2.custom.min.js"></script>
-</head>
-<style>
-	.grid .ui-selecting { background: #FECA40; }
-	.grid .ui-selected { background: #F39814; color: white; }
-	.grid, .list { list-style-type: none; margin: 0; padding: 0; }
-	.grid li { margin: 3px; padding: 1px; float: left; width: 100px; height: 80px; font-size: 1em; text-align: center; }
-	#filter-widget ul.ui-tabs-nav {font-size:48%;}
-</style>
-<body>
-  <div id="filter-widget" class="list">
-    <ul>
-      <li tal:repeat="idx in keys">
-	<a href="${request.application_url}/artists/${index[idx]}" 
-	   tal:content="idx">index</a>
-      </li>
-    </ul>
-    <div>
-      <span tal:replace="structure items"/>
-    </div>
-  </div>
-
 <script type="text/javascript">
 $(function(){
   $("#filter-widget").tabs({show:function(){
@@ -49,5 +29,25 @@ $(function(){
   });//end tabs
  });//end $
 </script>
+</head>
+<style>
+	.grid .ui-selecting { background: #FECA40; }
+	.grid .ui-selected { background: #F39814; color: white; }
+	.grid, .list { list-style-type: none; margin: 0; padding: 0; }
+	.grid li { margin: 3px; padding: 1px; float: left; width: 100px; height: 80px; font-size: 1em; text-align: center; }
+	#filter-widget ul.ui-tabs-nav {font-size:48%;}
+</style>
+<body>
+  <div id="filter-widget" class="list">
+    <ul>
+      <li tal:repeat="idx in keys">
+	<a href="${request.application_url}/artists/${index[idx]}" 
+	   tal:content="idx">index</a>
+      </li>
+    </ul>
+    <div>
+      <span tal:replace="structure items"/>
+    </div>
+  </div>
 </body>
 </html>

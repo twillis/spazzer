@@ -1,5 +1,5 @@
 <ul xmlns:tal="http://xml.zope.org/namespaces/tal"
-    id="album-list" class="data-list list">
+    class="album-list data-list list">
     <li class="artist-item" tal:repeat="item albums">
       <h3>${unicode(item)}&nbsp;&nbsp;<a class="download-link" href="${'%s/artists/%s/albums/%s/download' % (request.application_url,unicode(artist.name) ,unicode(item.name))}">(download)</a></h3>
 	<ol class="album-content">

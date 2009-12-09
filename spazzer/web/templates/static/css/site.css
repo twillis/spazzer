@@ -1,0 +1,29 @@
+#artist-list{
+    font-size:80%;
+}
+
+.artist-header{
+    text-decoration:none;
+}
+
+.download-link{
+    text-decoration:none;
+    font-weight:bold;
+}
+
+.album-list{
+    font-size:80%;
+    
+}
+
+.album-list > li{
+    padding-left:1em;
+}
+
+.album-content{
+    padding-left:2em;
+}
+
+.data-list{
+  border-top: solid black .1em;
+}

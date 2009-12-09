@@ -2,6 +2,7 @@ from webob import Response
 from webob.exc import HTTPNotFound
 from repoze.bfg.chameleon_zpt import render_template_to_response as render, render_template
 import os
+from urllib import quote as url_quote
 
 ALPHABET_SEQ = ( "A","B","C","D","E","F","G","H","I","J",
                  "K","L","M","N","O","P","Q","U","R","S",
@@ -89,6 +90,7 @@ def _serve(filebuf,filename,filesize):
     
 
 def render_items(items, request):
+    request.url_quote = url_quote
     return render_template("templates/data.pt", 
                            items = items, 
                            request = request)
