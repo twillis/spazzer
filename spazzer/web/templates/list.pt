@@ -30,13 +30,6 @@ $(function(){
  });//end $
 </script>
 </head>
-<style>
-	.grid .ui-selecting { background: #FECA40; }
-	.grid .ui-selected { background: #F39814; color: white; }
-	.grid, .list { list-style-type: none; margin: 0; padding: 0; }
-	.grid li { margin: 3px; padding: 1px; float: left; width: 100px; height: 80px; font-size: 1em; text-align: center; }
-	#filter-widget ul.ui-tabs-nav {font-size:48%;}
-</style>
 <body>
   <div id="filter-widget" class="list">
     <ul>

@@ -1,5 +1,9 @@
+#filter-widget ul.ui-tabs-nav {
+    font-size:48%;
+}
 #artist-list{
     font-size:80%;
+
 }
 
 .artist-header{
@@ -26,4 +30,5 @@
 
 .data-list{
   border-top: solid black .1em;
+  list-style-type: none; margin: 0; padding: 0;
 }

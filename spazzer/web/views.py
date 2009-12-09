@@ -4,6 +4,9 @@ from repoze.bfg.chameleon_zpt import render_template_to_response as render, rend
 import os
 from urllib import quote as url_quote
 
+def quote(s):
+    return url_quote(s.encode("utf-8"))
+
 ALPHABET_SEQ = ( "A","B","C","D","E","F","G","H","I","J",
                  "K","L","M","N","O","P","Q","U","R","S",
                  "T","U","V","W","X","Y","Z")
@@ -47,6 +50,7 @@ def album_list(context, request): pass
 def album_view(context, request): pass
 
 def view_data(context,request):
+    request.url_quote = url_quote
     items = context.list_items(request)
     return Response(render_items(items, request))
 
@@ -54,6 +58,7 @@ def view_artist_detail(context, request):
     return Response(get_artist_detail(context, request))
 
 def get_artist_detail(context,request):
+    request.url_quote = quote
     key = request.params.get("artist")
     print "Key = %s" % key
     try:
@@ -90,7 +95,7 @@ def _serve(filebuf,filename,filesize):
     
 
 def render_items(items, request):
-    request.url_quote = url_quote
+    request.url_quote = quote
     return render_template("templates/data.pt", 
                            items = items, 
                            request = request)

@@ -4,12 +4,6 @@
   <include package="repoze.bfg.includes" />
 
   <view
-     for=".models.SiteModel"
-     view=".views.my_view"
-     renderer="templates/mytemplate.pt"
-     />
-
-  <view
       for=".models.ArtistModel"
       view=".views.artist_list"
       renderer="templates/list.pt"/>

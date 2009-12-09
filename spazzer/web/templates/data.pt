@@ -1,7 +1,8 @@
 <ul xmlns:tal="http://xml.zope.org/namespaces/tal"
     id="artist-list" class="data-list list">
     <li class="artist-item" tal:repeat="item items">
-      <h3><a class="artist-header" href="${request.application_url}/artists/detail?artist=${unicode(item)}">${unicode(item)}</a></h3>
+      <h3><a class="artist-header" 
+	     href="${request.application_url}/artists/detail?artist=${request.url_quote(unicode(item))}">${unicode(item)}</a></h3>
 	<div class="artist-content">
 	  ${unicode(item)} content pane
 	</div>
