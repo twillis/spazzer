@@ -38,8 +38,13 @@ $(function(){
 	   tal:content="idx">index</a>
       </li>
     </ul>
-    <div>
-      <span tal:replace="structure items"/>
+    <span tal:replace="structure items"/>
+
+    <div id="search">
+      <form action="${request.application_url}/artists/search?POST" method="POST">
+	<input type="text" name="criteria"/>
+	<input type="submit" value="Search"/>
+      </form>
     </div>
   </div>
 </body>

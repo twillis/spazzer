@@ -30,6 +30,15 @@ class ArtistModel(BaseModel):
         result.__getitem__ = _x_(result)
         return result
 
+    def search_artists(self,criteria):
+        return self.__modelview__.search(criteria)
+
+    def search_albums(self,criteria):
+        return AlbumView.search(criteria)
+
+    def search_tracks(self,criteria):
+        return TrackView.search(criteria)
+
     def list_items(self, request):
         if self.__modelview__ is None:
             return None
@@ -52,7 +61,7 @@ class ArtistModel(BaseModel):
         else:
             search = None
 
-        return self.__modelview__.search_list(search)
+        return self.__modelview__.search(search)
 
         
 class AlbumModel(BaseModel):

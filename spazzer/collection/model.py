@@ -117,7 +117,7 @@ class ArtistView(object):
         return FileRecord.query(FileRecord.artist).filter(FileRecord.artist!=None).distinct()
         
     @classmethod
-    def search_list(cls, criteria = None):
+    def search(cls, criteria = None):
         qry = cls.query()
         if criteria:
             qry = qry.filter(FileRecord.artist.like(u"%s" % criteria))
@@ -189,10 +189,10 @@ class AlbumView(object):
         return TrackView.get_by_album(self.name)
 
     @classmethod
-    def search_list(cls, criteria = None):
+    def search(cls, criteria = None):
         qry = cls.query()
         if criteria:
-            qry = qry.filter(FileRecord.artist.like(u"\%%s\%" % criteria))
+            qry = qry.filter(FileRecord.album.like(u"%%%s%%" % criteria))
         
         results = []
         
@@ -220,7 +220,18 @@ class AlbumView(object):
         length = io.tell()
         io.reset()
         return io,cleanse_filename("%s - %s.zip" % (self.name, self.year)),length
-        
+
+    def _get_artist(self):
+        artists = FileRecord.query(FileRecord.artist).distinct().filter(FileRecord.album == self.name).filter(FileRecord.year == self.year).all()
+
+        if len(artists)>1:
+            return "Various Artists"
+        elif len(artists) == 1:
+            return artists[0][0]
+        else:
+            return "Unknown"
+
+    artist = property(_get_artist)
 class TrackView(object):
     def __init__(self,fileRecord):
         self.__record = fileRecord
@@ -236,6 +247,19 @@ class TrackView(object):
         assert val is not None
         print "File: %s" % val
         return cls(val)
+
+    @classmethod
+    def search(cls, criteria = None):
+        qry = cls.query()
+        if criteria:
+            qry = qry.filter(FileRecord.title.like(u"%%%s%%" % criteria))
+        
+        results = []
+        
+        for result in qry.all():
+            results.append(cls(result))
+
+        return results
 
     @classmethod
     def get_by_album(cls,album,artist = None, year = None):
@@ -271,6 +295,6 @@ class TrackView(object):
         return getattr(self.__record, name)
 
     def __repr__(self):
-        return u"%d - %s" % (self.track, self.title.title())
+        return u"%d - %s" % (self.track or 0, self.title.title())
 
         

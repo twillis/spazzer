@@ -15,6 +15,7 @@ FILTER_INDEX = {}
 
 EXTRA_INDEX = {"[ALL]":"data/?start=",
                 "[#]":"data/?start=__num__",
+               "Search":"#search",
                }
 FILTER_INDEX.update(idx)
 keys = FILTER_INDEX.keys()
@@ -26,7 +27,7 @@ keys.reverse()
 keys.append("[ALL]")
 keys.reverse()
 keys.append("[#]")
-
+keys.append("Search")
 def my_view(request):
     return {'project':'spazzer'}
 
@@ -40,6 +41,19 @@ def echo(context,request):
 %s
 """ % ("%s: %s" % (context.__class__.__name__, context), request.environ)
     return Response(result)
+
+def search(context,request):
+    request.url_quote = url_quote
+    if "POST" in request.params:
+        criteria = request.POST.get("criteria")
+        #get artists
+        artists = context.search_artists(criteria)
+        #get albums
+        albums = context.search_albums(criteria)
+        #get songs
+        tracks = context.search_tracks(criteria)
+
+    return {"artists":artists,"albums":albums,"tracks":tracks}
 
 def artist_list(context, request):
     items = context.list_items(request)
