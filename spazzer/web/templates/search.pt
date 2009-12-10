@@ -11,21 +11,15 @@
 <body>
 	<div id="artist-results" class="results">
 	  <h2>Artists</h2>
-	     <ul>
-		<li tal:repeat="artist in artists"><h3 tal:content="unicode(artist)">Artist</h3></li>
-	     </ul>
+	  <span tal:replace="structure artists"/>
 	</div>
 	<div id="album-results" class="results">
 	  <h2>Albums</h2>
-	     <ul>
-		<li tal:repeat="album in albums"><h3 tal:content="u'%s - (%s)' % (unicode(album),unicode(album.artist))">Album</h3></li>
-	     </ul>
+	  <span tal:replace="structure albums">Album</span>
 	</div>
 	<div id="track-results" class="results">
 	  <h2>Tracks</h2>
-	     <ul>
-		<li tal:repeat="track in tracks"><h3 tal:content="u'%s - (%s)' % (unicode(track),unicode(track.artist))">Tracks</h3></li>
-	     </ul>
+	  <span tal:replace="structure tracks"/>
 	</div>
 </body>
 </html>

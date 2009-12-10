@@ -46,22 +46,18 @@ def search(context,request):
     request.url_quote = url_quote
     if "POST" in request.params:
         criteria = request.POST.get("criteria")
-        #get artists
         artists = context.search_artists(criteria)
-        #get albums
         albums = context.search_albums(criteria)
-        #get songs
         tracks = context.search_tracks(criteria)
 
-    return {"artists":artists,"albums":albums,"tracks":tracks}
+    return {
+        "artists":render_items(artists,request),
+        "albums":render_detail(context, request, albums or []),
+        "tracks":render_tracks(tracks,request,show_artist = True)}
 
 def artist_list(context, request):
     items = context.list_items(request)
     return {"items":"", "title":"list", "index": FILTER_INDEX, "keys": keys}
-
-def artist_view(context, request): pass
-def album_list(context, request): pass
-def album_view(context, request): pass
 
 def view_data(context,request):
     request.url_quote = url_quote
@@ -69,19 +65,22 @@ def view_data(context,request):
     return Response(render_items(items, request))
 
 def view_artist_detail(context, request):
-    return Response(get_artist_detail(context, request))
+    return Response(render_detail(context, request))
 
-def get_artist_detail(context,request):
+def render_detail(context,request, albums = None):
     request.url_quote = quote
-    key = request.params.get("artist")
-    print "Key = %s" % key
-    try:
-        artist = context[key]
-    except KeyError, key:
-        raise HTTPNotFound()
-
+    if albums is None:
+        key = request.params.get("artist")
+        try:
+            artist = context[key]
+        except KeyError, key:
+            raise HTTPNotFound()
+        albums = artist.get_albums()
+    else:
+        artist = None
+        
     return render_template("templates/detail.pt",
-                           albums = artist.get_albums(), 
+                           albums = albums, 
                            request = request, 
                            context = context, artist = artist)
 
@@ -104,18 +103,31 @@ def _serve(filebuf,filename,filesize):
     
     response.body = filebuf.read()
     return response
-    
 
 def render_items(items, request):
     request.url_quote = quote
     return render_template("templates/data.pt", 
                            items = items, 
                            request = request)
+        
+def render_tracks(items, request, show_artist = False):
+    request.url_quote = quote
+    
+    return render_template("templates/tracks.pt", 
+                           tracks = items, 
+                           request = request,
+                           ftt = f_track_title(show_artist))
 
-            
+def f_track_title(show_artist = False):
+    _show = show_artist
+    def _x(track):
+        track_title = track.title or u'(Unknown)' 
+        if _show:
+            if track.artist:
+                return u"%s by %s" % (track_title,track.artist or u'(Unknown)')
+            else:
+                return u"%s by %s" % (track_title, u'(Unknown)')
+        else:
+            return track_title
 
-#artist_list = echo
-artist_view = echo
-album_list = artist_list
-album_view = echo
-
+    return _x

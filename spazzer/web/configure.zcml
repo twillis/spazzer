@@ -25,21 +25,8 @@
       name="detail"/>
 
   <view
-      for="..collection.model.ArtistView"
-      view=".views.artist_view"/>
-
-  <view
-      for=".models.AlbumModel"
-      view=".views.album_list"
-      renderer="templates/list.pt"/>
-
-  <view
       for=".models.DownloadModel"
       view=".views.serve"/>
-
-  <view
-      for="..collection.model.AlbumView"
-      view=".views.album_view"/>
 
   <view
       for="..collection.model.FileRecord"

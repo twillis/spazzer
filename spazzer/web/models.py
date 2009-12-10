@@ -2,6 +2,7 @@ from ..collection.model import FileRecord, MountPoint, ArtistView, AlbumView, Tr
 from ..collection.meta import _s
 import transaction
 import uuid
+import os
 
 class BaseModel(object):
     __modelview__ = None
@@ -31,7 +32,7 @@ class ArtistModel(BaseModel):
         return result
 
     def search_artists(self,criteria):
-        return self.__modelview__.search(criteria)
+        return self.__modelview__.search("%%%s%%" % criteria)
 
     def search_albums(self,criteria):
         return AlbumView.search(criteria)

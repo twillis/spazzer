@@ -102,7 +102,10 @@ class FileRecord(Base):
                                             self.year,
                                             self.title,
                                             os.path.splitext(self.file_name)[1]))
+        
     safe_file_name = property(_safe_file_name)
+
+    
 
 #    These have nothing to do with db persistence, column/table mapping or anything
 class ArtistView(object):
