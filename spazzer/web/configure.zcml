@@ -5,12 +5,12 @@
 
   <view
       for=".models.ArtistModel"
-      view=".views.artist_list"
-      renderer="templates/list.pt"/>
+      view=".views.browse"
+      renderer="templates/browse.pt"/>
 
   <view
       for=".models.ArtistModel"
-      view=".views.view_data"
+      view=".views.view_artist"
       name="data"/>
 
   <view
@@ -21,7 +21,7 @@
 
   <view
       for=".models.ArtistModel"
-      view=".views.view_artist_detail"
+      view=".views.view_albums"
       name="detail"/>
 
   <view

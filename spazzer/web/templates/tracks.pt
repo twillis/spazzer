@@ -1,4 +1,4 @@
-<ol xmlns:tal="http://xml.zope.org/namespaces/tal" class="track-content">
+<ol xmlns:tal="http://xml.zope.org/namespaces/tal" class="track-content data-list list track-list">
     <li tal:repeat="track in tracks">
     	<span tal:content="ftt(track)">track</span>&nbsp;&nbsp;<a class="download-link" href="${'%s/download/?track=%s' % (request.application_url,str(track.id))}">download</a>
 	</li>

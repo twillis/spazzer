@@ -6,10 +6,22 @@
 
 }
 
+
+
 .artist-header{
     text-decoration:none;
+
 }
 
+.artist-item{
+background:#b2b294;
+
+
+}
+
+.artist-content{
+ background-color:#ffffff;
+}
 .download-link{
     text-decoration:none;
     font-weight:bold;
@@ -32,3 +44,30 @@
   border-top: solid black .1em;
   list-style-type: none; margin: 0; padding: 0;
 }
+
+.track-list{
+    font-size:80%;
+}
+
+#navigation > ul{
+ text-align:right;
+ list-style-type:none;
+}
+
+#navigation > ul > li{
+ display:inline-block;
+ padding-left:1em;
+}
+
+
+
+#navigation > ul > li > a{
+text-decoration:none;
+font-weight:bolder;
+color:#7a7f70 ;
+}
+
+#results{
+padding:1em;
+}
+

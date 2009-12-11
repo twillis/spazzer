@@ -94,6 +94,11 @@ class FileRecord(Base):
         self.track = track
         self.title = title
 
+    def on_compilation(self):
+        if not hasattr(self,"__compilation"):
+            self.__compilation = self.query(FileRecord.artist).filter(FileRecord.album == self.album).filter(FileRecord.year == self.year).distinct().count() > 1
+        return self.__compilation
+
     def _safe_file_name(self):
         FMT_STR = "%s - %s - %s (%d) - %s%s"
         return cleanse_filename(FMT_STR % (self.track,
@@ -235,6 +240,7 @@ class AlbumView(object):
             return "Unknown"
 
     artist = property(_get_artist)
+
 class TrackView(object):
     def __init__(self,fileRecord):
         self.__record = fileRecord
@@ -250,6 +256,7 @@ class TrackView(object):
         assert val is not None
         print "File: %s" % val
         return cls(val)
+
 
     @classmethod
     def search(cls, criteria = None):

@@ -3,13 +3,15 @@ from ..collection.meta import _s
 import transaction
 import uuid
 import os
+from repoze.bfg.url import model_url
 
 class BaseModel(object):
     __modelview__ = None
     def __init__(self,name,parent=None):
         self.__name__ = name
         self.__parent__ = parent
-
+    def get_url(self, request):
+        return model_url(self, request)
 
 class ArtistModel(BaseModel):
     __modelview__ = ArtistView
@@ -160,8 +162,7 @@ class SiteModel(object):
 
     def __init__(self):
         self._models = {}
-        self._models["artists"] = ArtistModel("artists", self)
-        self._models["tracks"] = TrackModel("tracks", self)
+        self._models["collection"] = ArtistModel("collection", self)
         self._models["admin"] = AdminModel("admin", self)
         self._models["download"] = DownloadModel("download", self)
 

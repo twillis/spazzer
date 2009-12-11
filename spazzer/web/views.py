@@ -14,9 +14,7 @@ idx = [(c, "data/?start=%s" % c) for c in ALPHABET_SEQ]
 FILTER_INDEX = {}
 
 EXTRA_INDEX = {"[ALL]":"data/?start=",
-                "[#]":"data/?start=__num__",
-               "Search":"#search",
-               }
+                "[#]":"data/?start=__num__"}
 FILTER_INDEX.update(idx)
 keys = FILTER_INDEX.keys()
 keys.sort()
@@ -27,20 +25,6 @@ keys.reverse()
 keys.append("[ALL]")
 keys.reverse()
 keys.append("[#]")
-keys.append("Search")
-def my_view(request):
-    return {'project':'spazzer'}
-
-
-def echo(context,request):
-    result = """
-<h1>Context</h1>
-%s
-
-<h1>Request</h1>
-%s
-""" % ("%s: %s" % (context.__class__.__name__, context), request.environ)
-    return Response(result)
 
 def search(context,request):
     request.url_quote = url_quote
@@ -49,25 +33,28 @@ def search(context,request):
         artists = context.search_artists(criteria)
         albums = context.search_albums(criteria)
         tracks = context.search_tracks(criteria)
+    else:
+        artists = []
+        albums = []
+        tracks = []
 
     return {
-        "artists":render_items(artists,request),
-        "albums":render_detail(context, request, albums or []),
+        "artists":render_artists(artists,request,context),
+        "albums":render_albums(context, request, albums or []),
         "tracks":render_tracks(tracks,request,show_artist = True)}
 
-def artist_list(context, request):
-    items = context.list_items(request)
+def browse(context, request):
     return {"items":"", "title":"list", "index": FILTER_INDEX, "keys": keys}
 
-def view_data(context,request):
+def view_artist(context,request):
     request.url_quote = url_quote
     items = context.list_items(request)
-    return Response(render_items(items, request))
+    return Response(render_artists(items, request, context))
 
-def view_artist_detail(context, request):
-    return Response(render_detail(context, request))
+def view_albums(context, request):
+    return Response(render_albums(context, request))
 
-def render_detail(context,request, albums = None):
+def render_albums(context,request, albums = None):
     request.url_quote = quote
     if albums is None:
         key = request.params.get("artist")
@@ -82,9 +69,14 @@ def render_detail(context,request, albums = None):
     return render_template("templates/detail.pt",
                            albums = albums, 
                            request = request, 
-                           context = context, artist = artist)
+                           context = context, artist = artist, 
+                           ftt = f_track_title)
 
 def serve(context,request):
+    """
+    get's the file data from the context and dispatches off
+    to the request builder
+    """
     result = context.get_file(request)
     if result:
         buf,length,fname = result
@@ -96,6 +88,9 @@ def serve(context,request):
         return HTTPNotFound()
         
 def _serve(filebuf,filename,filesize):
+    """
+    request builder for serving files
+    """
     response = Response(content_type ="binary/octet-stream")
     response.headers.add("Content-Disposition",
                          "attachment; filename=%s; size=%d" % (
@@ -104,15 +99,18 @@ def _serve(filebuf,filename,filesize):
     response.body = filebuf.read()
     return response
 
-def render_items(items, request):
+def render_artists(items, request, context):
     request.url_quote = quote
-    return render_template("templates/data.pt", 
+    return render_template("templates/artist.pt", 
                            items = items, 
-                           request = request)
+                           request = request, context = context)
         
 def render_tracks(items, request, show_artist = False):
+    """
+    render functions assemble pieces from the context
+    """
     request.url_quote = quote
-    
+
     return render_template("templates/tracks.pt", 
                            tracks = items, 
                            request = request,

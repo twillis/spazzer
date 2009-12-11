@@ -31,21 +31,27 @@ $(function(){
 </script>
 </head>
 <body>
-  <div id="filter-widget" class="list">
+  <div id="navigation">
     <ul>
-      <li tal:repeat="idx in keys">
-	<a href="${request.application_url}/artists/${index[idx]}" 
-	   tal:content="idx">index</a>
-      </li>
+      <li><a href="${context.get_url(request)}">Browse</a></li>
+      <li><a href="${context.get_url(request)}search">Search</a></li>
+      <li><a href="${context.get_url(request)}manage">Manage</a></li>
     </ul>
-    <span tal:replace="structure items"/>
-
+  </div>
     <div id="search">
-      <form action="${request.application_url}/artists/search?POST" method="POST">
+      <form action="${context.get_url(request)}search?POST" method="POST">
 	<input type="text" name="criteria"/>
 	<input type="submit" value="Search"/>
       </form>
     </div>
-  </div>
+  <div id="filter-widget" class="list">
+    <ul>
+      <li tal:repeat="idx in keys">
+	<a href="${context.get_url(request)}/${index[idx]}" 
+	   tal:content="idx">index</a>
+      </li>
+    </ul>
+    </div>
+    <span tal:replace="structure items"/>
 </body>
 </html>
