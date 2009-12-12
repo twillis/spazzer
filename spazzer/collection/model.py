@@ -13,6 +13,17 @@ import zipfile
 
 Base = declarative_base()
 
+class Queryable(object):
+    @classmethod
+    def query(cls,*attrs):
+        """
+        attrs to select if None then entire class
+        """
+        if len(attrs) == 0:
+            attrs = [cls]
+        print attrs
+        return _s().query(*attrs)
+
 def cleanse_filename(fname):
     fname = os.path.split(fname)[1]
     INVALID = u"\"*/:<>?\\|"
@@ -28,12 +39,14 @@ def cleanse_filename(fname):
     return result.replace(u" ", u"_")
     
 
-class MountPoint(Base):
+class MountPoint(Base,Queryable):
     __tablename__ = "mount_points"
     id = id_column()
     mount = Column(Unicode(1024), unique = True)
+    def __init__(self,mount):
+        self.mount = mount
 
-class FileRecord(Base):
+class FileRecord(Base,Queryable):
     __tablename__ = "files"
     id = id_column()
     file_name = Column(Unicode(1024), unique = True, index = True)
@@ -53,15 +66,6 @@ class FileRecord(Base):
     def get_by_filename(cls,file_name):
         return cls.query().filter(cls.file_name == file_name).first()
 
-    @classmethod
-    def query(cls,*attrs):
-        """
-        attrs to select if None then entire class
-        """
-        if len(attrs) == 0:
-            attrs = [cls]
-        print attrs
-        return _s().query(*attrs)
 
     def __init__(self, file_name,create_date,modify_date,
                  artist=None,
@@ -102,10 +106,10 @@ class FileRecord(Base):
     def _safe_file_name(self):
         FMT_STR = "%s - %s - %s (%d) - %s%s"
         return cleanse_filename(FMT_STR % (self.track,
-                                            self.artist,
-                                            self.album,
+                                            self.artist.replace("/","\\"),
+                                            self.album.replace("/","\\"),
                                             self.year,
-                                            self.title,
+                                            self.title.replace("/","\\"),
                                             os.path.splitext(self.file_name)[1]))
         
     safe_file_name = property(_safe_file_name)

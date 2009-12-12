@@ -46,6 +46,19 @@ def search(context,request):
 def browse(context, request):
     return {"items":"", "title":"list", "index": FILTER_INDEX, "keys": keys}
 
+def view_manage(context,request):
+    if "POST" in request.params:
+        if "DELETE" in request.params:
+            context.remove_mount(request.POST.get("mount"))
+            msg = None
+        else:
+            result,msg = context.add_mount(request.POST.get("mount"))
+    else:
+        msg = None
+            
+    mounts = context.get_mounts()
+    return {"mounts":mounts, "message": msg}
+
 def view_artist(context,request):
     request.url_quote = url_quote
     items = context.list_items(request)

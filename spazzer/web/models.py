@@ -13,7 +13,7 @@ class BaseModel(object):
     def get_url(self, request):
         return model_url(self, request)
 
-class ArtistModel(BaseModel):
+class CollectionModel(BaseModel):
     __modelview__ = ArtistView
     def __getitem__(self, key):
         """
@@ -150,11 +150,55 @@ class DownloadModel(BaseModel):
                 return self.get_album_file(album,artist,year)
             else:
                 return None
-            
-        
     
+class AdminModel(BaseModel):
+    def __getitem__(self,key):
+        raise KeyError,key
 
-class AdminModel(BaseModel):pass
+    def get_mounts(self):
+        """
+        mount points registered with the system
+        """
+        return MountPoint.query().all()
+    
+    def start_scan(self):
+        pass
+
+    def remove_mount(self,m_id):
+        m = MountPoint.query().get(uuid.UUID(m_id))
+        _s().delete(m)
+        transaction.commit()
+
+    def add_mount(self,path):
+        """
+        add mount point for future scanning
+        """
+        if os.path.exists(path):#exists
+            if not self.is_contained(path):#not already registered
+                if os.access(path,os.R_OK):#can read
+                    _s().add(MountPoint(path))
+                    transaction.commit()
+                    return True,""
+                else:
+                    return False, "Mount point %s is not readable by this application " % path
+            else:
+                return False, "Mount point %s or it's parent path is already registered" % path
+        else:
+            return False, "Mount point %s does not exist" % path
+
+    def is_contained(self,path):
+        """
+        check to make sure path does not sit on a path already registered
+        """
+        part = path
+        while not os.path.ismount(part):
+
+            if MountPoint.query().filter(MountPoint.mount==part.strip()).count()==0:
+                part = os.path.split(part)[0]
+            else:
+                return True
+
+        return False
 
 class SiteModel(object):
     __parent__ = None
@@ -162,7 +206,7 @@ class SiteModel(object):
 
     def __init__(self):
         self._models = {}
-        self._models["collection"] = ArtistModel("collection", self)
+        self._models["collection"] = CollectionModel("collection", self)
         self._models["admin"] = AdminModel("admin", self)
         self._models["download"] = DownloadModel("download", self)
 

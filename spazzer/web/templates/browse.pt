@@ -35,7 +35,7 @@ $(function(){
     <ul>
       <li><a href="${context.get_url(request)}">Browse</a></li>
       <li><a href="${context.get_url(request)}search">Search</a></li>
-      <li><a href="${context.get_url(request)}manage">Manage</a></li>
+      <li><a href="${request.application_url}/admin">Manage</a></li>
     </ul>
   </div>
     <div id="search">

@@ -4,23 +4,26 @@
   <include package="repoze.bfg.includes" />
 
   <view
-      for=".models.ArtistModel"
+      for=".models.CollectionModel"
       view=".views.browse"
       renderer="templates/browse.pt"/>
 
   <view
-      for=".models.ArtistModel"
+      for=".models.CollectionModel"
       view=".views.view_artist"
       name="data"/>
 
   <view
-      for=".models.ArtistModel"
+      for=".models.CollectionModel"
       view=".views.search"
       name="search"
       renderer="templates/search.pt"/>
 
+  <view for=".models.AdminModel"
+	view=".views.view_manage"
+	renderer="templates/manage.pt"/>
   <view
-      for=".models.ArtistModel"
+      for=".models.CollectionModel"
       view=".views.view_albums"
       name="detail"/>
 
