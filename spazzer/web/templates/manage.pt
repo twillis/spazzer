@@ -32,6 +32,10 @@
     </li>
   </ul>
 
+    <form action="?POST=1&amp;SCAN=1" method="POST">
+	<input type="submit" value="Update Collection"/>
+    </form>
+  
   <div class="error-message" tal:content="message"/>
 
 </body>

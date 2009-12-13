@@ -1,4 +1,5 @@
 from ..collection.model import FileRecord, MountPoint, ArtistView, AlbumView, TrackView, or_
+from ..collection.scanner import Scanner, process_file, is_contained, prune 
 from ..collection.meta import _s
 import transaction
 import uuid
@@ -162,7 +163,25 @@ class AdminModel(BaseModel):
         return MountPoint.query().all()
     
     def start_scan(self):
-        pass
+        last_modified = _s().query(FileRecord.modify_date).order_by(FileRecord.modify_date.desc()).first()
+        if last_modified:
+            last_modified = last_modified[0]
+        errors = []
+
+        def abort():pass
+        def _proc(info):
+            process_file(info,errors, transaction.commit, abort)
+        def _prune(*rec):
+            prune(*rec,committer = transaction.commit,rollbacker = abort)
+
+        scanner = Scanner([m.mount for m in \
+                               self.get_mounts()], 
+                          callbackNew = _proc,
+                          last_update = last_modified, callbackOld = _prune)
+        scanner()
+        return len(errors)==0, "\n".join(("%s:\n\t%s" % (info,ex) for info,ex in errors))
+
+
 
     def remove_mount(self,m_id):
         m = MountPoint.query().get(uuid.UUID(m_id))
@@ -174,7 +193,7 @@ class AdminModel(BaseModel):
         add mount point for future scanning
         """
         if os.path.exists(path):#exists
-            if not self.is_contained(path):#not already registered
+            if not is_contained(path):#not already registered
                 if os.access(path,os.R_OK):#can read
                     _s().add(MountPoint(path))
                     transaction.commit()
@@ -186,19 +205,6 @@ class AdminModel(BaseModel):
         else:
             return False, "Mount point %s does not exist" % path
 
-    def is_contained(self,path):
-        """
-        check to make sure path does not sit on a path already registered
-        """
-        part = path
-        while not os.path.ismount(part):
-
-            if MountPoint.query().filter(MountPoint.mount==part.strip()).count()==0:
-                part = os.path.split(part)[0]
-            else:
-                return True
-
-        return False
 
 class SiteModel(object):
     __parent__ = None

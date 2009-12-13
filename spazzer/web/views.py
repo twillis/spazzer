@@ -51,6 +51,8 @@ def view_manage(context,request):
         if "DELETE" in request.params:
             context.remove_mount(request.POST.get("mount"))
             msg = None
+        elif "SCAN" in request.params:
+            result,msg = context.start_scan()
         else:
             result,msg = context.add_mount(request.POST.get("mount"))
     else:
