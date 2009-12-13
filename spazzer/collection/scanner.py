@@ -55,7 +55,7 @@ def build_metadata_processor():
         try:
             d = processors[os.path.splitext(f)[1].lower()](f)
             stats = os.stat(f)
-            d["file"] =f  #unicode(f, encoding = FS_ENC)
+            d["file"] =f
             d["create_date"] = datetime.fromtimestamp(stats[stat.ST_CTIME])
             d["modify_date"] = datetime.fromtimestamp(stats[stat.ST_MTIME])
             return d
@@ -80,11 +80,15 @@ def scan_dir(d, last_update = datetime(1900,1,1), check_extra = None):
                       if os.path.splitext(f)[1].lower() in VALID_XTNS):
 
             stats = os.stat(x)
+            file_update = datetime.fromtimestamp(stats[stat.ST_MTIME])
+
             if not check_extra or (check_extra and check_extra(x)) or \
                 (not last_update or (last_update and \
-                        last_update < datetime.fromtimestamp(stats[stat.ST_MTIME]))):
-                print "getting metadata for file %s...." % x
-                yield get_metadata(x)
+                        last_update < file_update)):
+                rec = RECORD_CACHE.get(x)
+                if not rec or (rec and file_update > rec.modify_date):
+                    print "need metadata for %s" % x
+                    yield get_metadata(x)
 
 class Scanner(object):
     def __init__(self, 
@@ -115,21 +119,20 @@ class Scanner(object):
         global RECORD_CACHE
         RECORD_CACHE = None
         global MOUNT_CACHE
-        global MOUNT_DIC
         MOUNT_CACHE = None
-        MOUNT_DIC = None
+
+        mounts = get_mounts()
+
         get_file_from_db("")
-        #prune portion
+
         items_to_remove = []
         
         for f,r in RECORD_CACHE.items():
-            if not is_contained(f) or not os.path.exists(f):
+            if not mounts or (mounts and not is_contained(f)) or not os.path.exists(f):
                 items_to_remove.append(r)
 
         if len(items_to_remove) > 0:
             self._prune(items_to_remove)
- 
-
 
         for dir in self.dirs:
             for f in scan_dir(dir, self.last_update, self._check):
@@ -137,32 +140,28 @@ class Scanner(object):
 
                 
 MOUNT_CACHE = None
-MOUNT_DIC = None
+
+
+def get_mounts():
+    global MOUNT_CACHE
+    if not MOUNT_CACHE:
+        MOUNT_CACHE =  MountPoint.query().all()
+
+    return MOUNT_CACHE
+
 
 def is_contained(path):
     """
     check to make sure path does not sit on a path already registered
     """
-    global MOUNT_CACHE
-    global MOUNT_DIC
-    if not MOUNT_CACHE:
-        MOUNT_CACHE = MountPoint.query().all()
-
-    if not MOUNT_CACHE:
-        return False
-
-    if not MOUNT_DIC and MOUNT_CACHE:
-        MOUNT_DIC = dict(((m.mount,m.mount) for m in MOUNT_CACHE))        
-
 
     part = path
     
     while not os.path.ismount(part):
-
-        if not part in MOUNT_DIC:
-            part = os.path.split(part)[0]
-        else:
+        if os.path.dirname(part) in dict(((os.path.dirname(m.mount),m.mount) for m in get_mounts())):
             return True
+        else:
+            part = os.path.split(part)[0]
 
     return False
 

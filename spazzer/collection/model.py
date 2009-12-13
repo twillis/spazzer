@@ -132,7 +132,7 @@ class ArtistView(object):
     def search(cls, criteria = None):
         qry = cls.query()
         if criteria:
-            qry = qry.filter(FileRecord.artist.like(u"%s" % criteria))
+            qry = qry.filter(or_(FileRecord.artist.like(u"%s" % criteria),FileRecord.artist.like(u"The %s" % criteria)))
         
         results = []
         
