@@ -38,5 +38,6 @@ setup(name = 'spazzer',
 
       [paste.paster_command]
       scan = spazzer.collection.scanner:ScannerCommand
-      """
+      """,
+      scripts = ["scripts/spazzer"]
       )
