@@ -310,5 +310,3 @@ class TrackView(object):
 
     def __repr__(self):
         return u"%d - %s" % (self.track or 0, self.title.title())
-
-        

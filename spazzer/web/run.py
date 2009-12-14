@@ -1,9 +1,10 @@
 from repoze.bfg.configuration import Configurator
 from zope.sqlalchemy import ZopeTransactionExtension
-
+from sqlalchemy import engine_from_config
+from sqlalchemy.orm import sessionmaker, scoped_session
 from .models import get_root
-from ..collection.manage import engine_from_config, init_model,\
-    sessionmaker, scoped_session, init_model, create_tables
+from ..collection.manage import init_model, create_tables
+
 
 def app(global_config, **settings):
     """ This function returns a ``repoze.bfg`` application object.  It
@@ -18,13 +19,13 @@ def app(global_config, **settings):
     config.load_zcml(zcml_file)
     return config.make_wsgi_app()
 
+
 def setup_model(**config):
     """
     sets up collection model according to configuration
     """
     engine = engine_from_config(config)
-    session = scoped_session(sessionmaker(bind = engine, 
-                                          extension = ZopeTransactionExtension()))
+    session = scoped_session(sessionmaker(bind = engine,
+                               extension = ZopeTransactionExtension()))
     init_model(session)
     create_tables()
-    

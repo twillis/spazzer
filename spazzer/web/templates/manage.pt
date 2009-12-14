@@ -2,7 +2,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml"
       xmlns:tal="http://xml.zope.org/namespaces/tal">
 <head>
-  <title></title>
+  <title>Manage Collection</title>
 	<link type="text/css" href="${request.application_url}/static/css/custom-theme/style.css" rel="stylesheet" />
 	<link type="text/css" href="${request.application_url}/static/css/site.css" rel="stylesheet" />
 	<script type="text/javascript" src="${request.application_url}/static/js/jquery-1.3.2.min.js"></script>
@@ -16,27 +16,28 @@
       <li><a href="${request.application_url}/admin">Manage</a></li>
     </ul>
   </div>
+  <div class="ui-widget-content">
+    <h4>Collection Mounts</h4>
+    <ul>
+      <li tal:repeat="mount in mounts">
+	${mount.mount}
+	<form action="?POST=1&amp;DELETE=1" method="POST">
+	  <input type="hidden" name="mount" value="${mount.id}"/>
+	  <input type="image" alt="Remove" src="${request.application_url}/static/css/custom-theme/images/remove.png"/>
+	</form>
+      </li>
+    </ul>
     <div id="add-mount">
       <form action="?POST" method="POST">
 	<input type="text" name="mount"/>
-	<input type="submit" value="Add"/>
+	<input type="image" alt="Add" src="${request.application_url}/static/css/custom-theme/images/add.png"/>
       </form>
     </div>
-  <ul>
-    <li tal:repeat="mount in mounts">
-    ${mount.mount}
-      <form action="?POST=1&amp;DELETE=1" method="POST">
-	<input type="hidden" name="mount" value="${mount.id}"/>
-	<input type="submit" value="Remove"/>
-      </form>
-    </li>
-  </ul>
-
+    <hr/>
     <form action="?POST=1&amp;SCAN=1" method="POST">
-	<input type="submit" value="Update Collection"/>
+	<input type="image" value="update" src="${request.application_url}/static/css/custom-theme/images/update.png"/>
     </form>
-  
-  <div class="error-message" tal:content="message"/>
-
+    <div class="error-message" tal:content="message"/>
+  </div>
 </body>
 </html>

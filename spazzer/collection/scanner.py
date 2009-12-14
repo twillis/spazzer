@@ -1,18 +1,17 @@
 """
 file system scanner seeks out music assets
 """
-
 from mutagen.easyid3 import EasyID3
 from mutagen.flac import FLAC
 import os
 import stat
 from datetime import datetime
-import threading
-import time
 from paste.script.command import Command, BadCommand
 from paste.deploy import appconfig
 import sys
 from .model import FileRecord, MountPoint
+from sqlalchemy import engine_from_config
+from sqlalchemy.orm import sessionmaker, scoped_session
 import manage
 
 F_MP3 = ".mp3"
@@ -22,21 +21,25 @@ FS_ENC = sys.getfilesystemencoding()
 
 RECORD_CACHE = None
 
+
 def get_file_from_db(file_name):
     global RECORD_CACHE
     if not RECORD_CACHE:
         print "generating record cache for this run..."
-        RECORD_CACHE = dict(FileRecord.query(FileRecord.file_name,FileRecord).all())
+        RECORD_CACHE = dict(FileRecord.query(
+            FileRecord.file_name, FileRecord).all())
         print "record cache generated"
-    
+
     return RECORD_CACHE.get(file_name)
 
 
 def get_metadata_mp3(f):
     return dict(EasyID3(f).items())
 
+
 def get_metadata_flac(f):
     return dict(FLAC(f).items())
+
 
 def build_metadata_processor():
     """
@@ -66,16 +69,17 @@ def build_metadata_processor():
 
 get_metadata = build_metadata_processor()
 
-def scan_dir(d, last_update = datetime(1900,1,1), check_extra = None):
+
+def scan_dir(d, last_update = datetime(1900, 1, 1), check_extra = None):
     """
     walk directory for each file with extension in VALID_XTNS, yield metadata
-    can be further filtered by comparing modified time of file against 
+    can be further filtered by comparing modified time of file against
     last_update
     """
     d = os.path.abspath(d)
     for r, dirs, files in os.walk(d):
 
-        for x in (os.path.join(r,f) \
+        for x in (os.path.join(r, f) \
                       for f in files \
                       if os.path.splitext(f)[1].lower() in VALID_XTNS):
 
@@ -90,12 +94,14 @@ def scan_dir(d, last_update = datetime(1900,1,1), check_extra = None):
                     print "need metadata for %s" % x
                     yield get_metadata(x)
 
+
 class Scanner(object):
-    def __init__(self, 
-                 dirs, 
-                 last_update = datetime(1900,1,1), 
-                 callbackNew=None, 
-                 check = None, 
+
+    def __init__(self,
+                 dirs,
+                 last_update = datetime(1900, 1, 1),
+                 callbackNew=None,
+                 check = None,
                  callbackOld = None):
         self.dirs = dirs
         self.last_update = last_update
@@ -103,17 +109,18 @@ class Scanner(object):
         self._prune = callbackOld or self._prune_print
         self._check = check or self.check_file
 
-    def check_file(self,path):
+    def check_file(self, path):
         return not get_file_from_db(path)
 
-    def callback(self,info):
+    def callback(self, info):
         self._callback(info)
-        
+
     def _print(self, info):
         print info
 
-    def _prune_print(self,reclist):
-        print "path to be pruned... %s" % "\n".join((r.file_name for r in reclist))
+    def _prune_print(self, reclist):
+        print "path to be pruned... %s" % "\n".join(
+            (r.file_name for r in reclist))
 
     def __call__(self):
         global RECORD_CACHE
@@ -126,9 +133,10 @@ class Scanner(object):
         get_file_from_db("")
 
         items_to_remove = []
-        
-        for f,r in RECORD_CACHE.items():
-            if not mounts or (mounts and not is_contained(f)) or not os.path.exists(f):
+
+        for f, r in RECORD_CACHE.items():
+            if not mounts or (mounts and not is_contained(f))\
+                   or not os.path.exists(f):
                 items_to_remove.append(r)
 
         if len(items_to_remove) > 0:
@@ -138,14 +146,13 @@ class Scanner(object):
             for f in scan_dir(dir, self.last_update, self._check):
                 self.callback(f)
 
-                
 MOUNT_CACHE = None
 
 
 def get_mounts():
     global MOUNT_CACHE
     if not MOUNT_CACHE:
-        MOUNT_CACHE =  MountPoint.query().all()
+        MOUNT_CACHE = MountPoint.query().all()
 
     return MOUNT_CACHE
 
@@ -156,9 +163,10 @@ def is_contained(path):
     """
 
     part = path
-    
+
     while not os.path.ismount(part):
-        if os.path.dirname(part) in dict(((os.path.dirname(m.mount),m.mount) for m in get_mounts())):
+        if os.path.dirname(part) in dict(
+            ((os.path.dirname(m.mount), m.mount) for m in get_mounts())):
             return True
         else:
             part = os.path.split(part)[0]
@@ -170,7 +178,7 @@ class ScannerCommand(Command):
     """
     Run scan to update the database.
     requires a config_file argument
-    
+
     Example::
        $ paster scan production.ini
     """
@@ -180,11 +188,11 @@ class ScannerCommand(Command):
     min_args = 1
     max_args = 2
     parser = Command.standard_parser()
-    parser.add_option("--last-modified", 
-                      action="store", 
-                      type="string", 
+    parser.add_option("--last-modified",
+                      action="store",
+                      type="string",
                       dest="last_modified",
-                      help = "only process files who have been updated since YYYY-MM-DD HH:MM")
+    help = "only process files who have been updated since YYYY-MM-DD HH:MM")
 
     parser.add_option("--section",
                       action="store",
@@ -215,55 +223,59 @@ class ScannerCommand(Command):
 """
 %s
 Error: CONFIG_FILE not found at %s%s.
-Please specify a CONFIG_FILE"""% 
-                    (self.parser.get_usage(), 
+Please specify a CONFIG_FILE"""%
+                    (self.parser.get_usage(),
                     os.path.sep,
                     config_file))
             else:
-                config = appconfig("config:%s" % config_file, 
-                                   name = name, 
+                config = appconfig("config:%s" % config_file,
+                                   name = name,
                                    relative_to = os.getcwd())
                 return config
         else:
             raise BadCommand(self.parser.get_usage())
-        
+
     def command(self):
-        
         self.parse_last_modified()
-        paste_config = self.get_config(self.parse_section())        
-        engine = manage.engine_from_config(paste_config)
-        session = manage.scoped_session(manage.sessionmaker())
+        paste_config = self.get_config(self.parse_section())
+        engine = engine_from_config(paste_config)
+        session = scoped_session(sessionmaker())
         session.configure(bind=engine)
         manage.init_model(session)
-        
+
         self.errors = []
-        
+
         scanner = Scanner([m[0] for m in \
-                               session.query(MountPoint.mount).all()], 
+                               session.query(MountPoint.mount).all()],
                           callbackNew = self._callback,
-                          last_update = self.last_modified, callbackOld = self._prune)
+                          last_update = self.last_modified,
+                          callbackOld = self._prune)
         scanner()
 
         result = "with errors" if len(self.errors)>0 else "with no errors"
         print "scanning complete %s" % result
-        
+
         if len(self.errors):
             for error in self.errors:
                 print error
-        
-    def _callback(self,info):
+
+    def _callback(self, info):
         process_file(info, self.errors)
 
-    def _prune(self,reclist):
+    def _prune(self, reclist):
         prune(reclist)
-        
+
+
 def session_committer():
     manage.meta._s().commit()
 
-def session_rollbacker():
-    manage.meta._s().rollback()    
 
-def prune(reclist, committer = session_committer, rollbacker = session_rollbacker):
+def session_rollbacker():
+    manage.meta._s().rollback()
+
+
+def prune(reclist, committer = session_committer,
+          rollbacker = session_rollbacker):
     try:
         session = manage.meta._s()
         for r in reclist:
@@ -275,11 +287,13 @@ def prune(reclist, committer = session_committer, rollbacker = session_rollbacke
         print "rolling back"
         rollbacker()
 
-def process_file(info,errors, committer = session_committer, rollbacker = session_rollbacker):
+
+def process_file(info, errors, committer = session_committer,
+                 rollbacker = session_rollbacker):
     try:
         if "exception" in info:
             ex = info.pop("exception")
-            errors.append((info,ex))
+            errors.append((info, ex))
         else:
             file_name = info.pop("file")
             create_date = info.pop("create_date")
@@ -303,16 +317,16 @@ def process_file(info,errors, committer = session_committer, rollbacker = sessio
             rec = get_file_from_db(file_name)
             if not rec:
                 rec = FileRecord(file_name,
-                             create_date, 
-                             modify_date, 
+                             create_date,
+                             modify_date,
                              artist = artist,
                              album = album,
                              title = title,
                              year = year,
                              track = track)
             elif rec.modify_date != modify_date:
-                rec.update(create_date, 
-                             modify_date, 
+                rec.update(create_date,
+                             modify_date,
                              artist = artist,
                              album = album,
                              title = title,
@@ -330,5 +344,5 @@ def process_file(info,errors, committer = session_committer, rollbacker = sessio
 
                 raise dbex
     except Exception as ex:
-        errors.append((info,ex))
-        print info,ex
+        errors.append((info, ex))
+        print info, ex
