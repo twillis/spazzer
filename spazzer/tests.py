@@ -2,7 +2,9 @@ import unittest
 
 from repoze.bfg import testing
 
+
 class ViewTests(unittest.TestCase):
+
     def setUp(self):
         testing.setUp()
 
@@ -14,5 +16,3 @@ class ViewTests(unittest.TestCase):
         request = testing.DummyRequest()
         info = my_view(request)
         self.assertEqual(info['project'], 'spazzer')
-
-

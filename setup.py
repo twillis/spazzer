@@ -6,16 +6,16 @@ here = os.path.abspath(os.path.dirname(__file__))
 README = open(os.path.join(here, 'README.txt')).read()
 CHANGES = open(os.path.join(here, 'CHANGES.txt')).read()
 
-requires = ['repoze.bfg', 
-            'mutagen', 
+requires = ['repoze.bfg',
+            'mutagen',
             'sqlalchemy',
             'alchemyextra',
             'zope.sqlalchemy']
 
-setup(name='spazzer',
-      version='0.0',
-      description='spazzer',
-      long_description=README + '\n\n' +  CHANGES,
+setup(name = 'spazzer',
+      version = '0.0',
+      description = 'spazzer',
+      long_description = README + '\n\n' + CHANGES,
       classifiers=[
         "Programming Language :: Python",
         "Framework :: BFG",
@@ -40,4 +40,3 @@ setup(name='spazzer',
       scan = spazzer.collection.scanner:ScannerCommand
       """
       )
-

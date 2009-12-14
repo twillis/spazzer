@@ -13,9 +13,11 @@ import zipfile
 
 Base = declarative_base()
 
+
 class Queryable(object):
+
     @classmethod
-    def query(cls,*attrs):
+    def query(cls, *attrs):
         """
         attrs to select if None then entire class
         """
@@ -23,6 +25,7 @@ class Queryable(object):
             attrs = [cls]
         print attrs
         return _s().query(*attrs)
+
 
 def cleanse_filename(fname):
     fname = os.path.split(fname)[1]
@@ -37,16 +40,18 @@ def cleanse_filename(fname):
             result.append(u"_")
     result = u"".join(result)
     return result.replace(u" ", u"_")
-    
 
-class MountPoint(Base,Queryable):
+
+class MountPoint(Base, Queryable):
     __tablename__ = "mount_points"
     id = id_column()
     mount = Column(Unicode(1024), unique = True)
-    def __init__(self,mount):
+
+    def __init__(self, mount):
         self.mount = mount
 
-class FileRecord(Base,Queryable):
+
+class FileRecord(Base, Queryable):
     __tablename__ = "files"
     id = id_column()
     file_name = Column(Unicode(1024), unique = True, index = True)
@@ -59,15 +64,14 @@ class FileRecord(Base,Queryable):
     modify_date = Column(DateTime(), nullable = False)
 
     @classmethod
-    def get_by_id(cls,id):
+    def get_by_id(cls, id):
         return cls.query().get(id)
 
     @classmethod
-    def get_by_filename(cls,file_name):
+    def get_by_filename(cls, file_name):
         return cls.query().filter(cls.file_name == file_name).first()
 
-
-    def __init__(self, file_name,create_date,modify_date,
+    def __init__(self, file_name, create_date, modify_date,
                  artist=None,
                  title=None,
                  album=None,
@@ -76,18 +80,18 @@ class FileRecord(Base,Queryable):
 
         self.file_name = file_name
 
-        self.update(create_date, modify_date, 
+        self.update(create_date, modify_date,
                     artist,
                     album,
                     title,
                     year,
                     track)
 
-    def update(self,create_date, modify_date,
-               artist = None, 
+    def update(self, create_date, modify_date,
+               artist = None,
                album = None,
                title = None,
-               year = None, 
+               year = None,
                track = None):
 
         self.create_date = create_date
@@ -99,50 +103,55 @@ class FileRecord(Base,Queryable):
         self.title = title
 
     def on_compilation(self):
-        if not hasattr(self,"__compilation"):
-            self.__compilation = self.query(FileRecord.artist).filter(FileRecord.album == self.album).filter(FileRecord.year == self.year).distinct().count() > 1
+        if not hasattr(self, "__compilation"):
+            self.__compilation = self.query(FileRecord.artist).filter(
+                FileRecord.album == self.album).filter(
+                FileRecord.year == self.year).distinct().count() > 1
         return self.__compilation
 
     def _safe_file_name(self):
         FMT_STR = "%s - %s - %s (%d) - %s%s"
         return cleanse_filename(FMT_STR % (self.track,
-                                            self.artist.replace("/","\\"),
-                                            self.album.replace("/","\\"),
+                                            self.artist.replace("/", "\\"),
+                                            self.album.replace("/", "\\"),
                                             self.year,
-                                            self.title.replace("/","\\"),
-                                            os.path.splitext(self.file_name)[1]))
-        
+                                            self.title.replace("/", "\\"),
+                                       os.path.splitext(self.file_name)[1]))
+
     safe_file_name = property(_safe_file_name)
 
-    
+#These have nothing to do with db persistence, column/table mapping or anything
 
-#    These have nothing to do with db persistence, column/table mapping or anything
 class ArtistView(object):
     """
     Represents an Artist view of the collection
     """
+
     def __init__(self, name):
         self.name = name
 
     @classmethod
     def query(cls):
-        return FileRecord.query(FileRecord.artist).filter(FileRecord.artist!=None).distinct()
-        
+        return FileRecord.query(FileRecord.artist).filter(
+            FileRecord.artist!=None).distinct()
+
     @classmethod
     def search(cls, criteria = None):
         qry = cls.query()
         if criteria:
-            qry = qry.filter(or_(FileRecord.artist.like(u"%s" % criteria),FileRecord.artist.like(u"The %s" % criteria)))
-        
+            qry = qry.filter(or_(
+                FileRecord.artist.like(u"%s" % criteria),
+                FileRecord.artist.like(u"The %s" % criteria)))
+
         results = []
-        
+
         for result in qry.all():
             results.append(cls(*result))
 
         return results
-            
+
     @classmethod
-    def get(cls,name):
+    def get(cls, name):
         result = cls.query().filter(FileRecord.artist==name).first()
 
         if result and len(result)>0:
@@ -157,20 +166,23 @@ class ArtistView(object):
     def get_albums(self):
         return AlbumView.get_by_artist(self.name)
 
+
 class AlbumView(object):
+
     def __init__(self, name, year):
         self.name = name
         self.year = year
 
     def __repr__(self):
-        return u"%s - %s" % (self.name.title(),self.year)
+        return u"%s - %s" % (self.name.title(), self.year)
 
     @classmethod
     def query(cls):
-        return FileRecord.query(FileRecord.album, FileRecord.year).filter(FileRecord.album != None).distinct()
+        return FileRecord.query(FileRecord.album, FileRecord.year).filter(
+            FileRecord.album != None).distinct()
 
     @classmethod
-    def get(cls,name, artist = None, year = None):
+    def get(cls, name, artist = None, year = None):
         qry = cls.query().filter(FileRecord.album==name)
 
         if artist:
@@ -184,10 +196,11 @@ class AlbumView(object):
             return cls(*result)
         else:
             return None
-        
+
     @classmethod
-    def get_by_artist(cls,artist):
-        results = cls.query().filter(FileRecord.artist==artist).order_by(FileRecord.year).all()
+    def get_by_artist(cls, artist):
+        results = cls.query().filter(FileRecord.artist==artist).order_by(
+            FileRecord.year).all()
         albums = []
         if results and len(results) > 0:
             for result in results:
@@ -205,9 +218,9 @@ class AlbumView(object):
         qry = cls.query()
         if criteria:
             qry = qry.filter(FileRecord.album.like(u"%%%s%%" % criteria))
-        
+
         results = []
-        
+
         for result in qry.all():
             results.append(cls(*result))
 
@@ -218,7 +231,7 @@ class AlbumView(object):
         relying on caller to close the string io
         """
         io = StringIO()
-        zf = zipfile.ZipFile(io,"w")
+        zf = zipfile.ZipFile(io, "w")
         try:
             for track in self.get_tracks():
                 zf.write(track.file_name,
@@ -228,13 +241,17 @@ class AlbumView(object):
             zf.close()
 
         io.reset()
-        io.seek(0,2)
+        io.seek(0, 2)
         length = io.tell()
         io.reset()
-        return io,cleanse_filename("%s - %s.zip" % (self.name, self.year)),length
+        return io,\
+               cleanse_filename("%s - %s.zip" % (self.name, self.year)),\
+               length
 
     def _get_artist(self):
-        artists = FileRecord.query(FileRecord.artist).distinct().filter(FileRecord.album == self.name).filter(FileRecord.year == self.year).all()
+        artists = FileRecord.query(FileRecord.artist).distinct().filter(
+            FileRecord.album == self.name).filter(
+            FileRecord.year == self.year).all()
 
         if len(artists)>1:
             return "Various Artists"
@@ -245,8 +262,10 @@ class AlbumView(object):
 
     artist = property(_get_artist)
 
+
 class TrackView(object):
-    def __init__(self,fileRecord):
+
+    def __init__(self, fileRecord):
         self.__record = fileRecord
 
     @classmethod
@@ -254,29 +273,28 @@ class TrackView(object):
         return FileRecord.query()
 
     @classmethod
-    def get(cls,fid):
+    def get(cls, fid):
         print "File Id: %s" % fid
         val = cls.query().get(fid)
         assert val is not None
         print "File: %s" % val
         return cls(val)
 
-
     @classmethod
     def search(cls, criteria = None):
         qry = cls.query()
         if criteria:
             qry = qry.filter(FileRecord.title.like(u"%%%s%%" % criteria))
-        
+
         results = []
-        
+
         for result in qry.all():
             results.append(cls(result))
 
         return results
 
     @classmethod
-    def get_by_album(cls,album,artist = None, year = None):
+    def get_by_album(cls, album, artist = None, year = None):
         qry = cls.query().filter(FileRecord.album == album)
 
         if artist:
@@ -294,7 +312,7 @@ class TrackView(object):
         return results
 
     @classmethod
-    def get_by_artist(cls,artist):
+    def get_by_artist(cls, artist):
         results = cls.query().filter(FileRecord.artist == artist)
         tracks = []
         if results and len(results)>0:

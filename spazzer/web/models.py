@@ -29,7 +29,7 @@ class CollectionModel(BaseModel):
         """
         result = self.__modelview__.get(key)
         if not result:
-            raise KeyError, key
+            raise KeyError(key)
         result.__parent__ = self
         result.__name__ = key
         #monkeypath
@@ -87,7 +87,7 @@ class AlbumModel(BaseModel):
         #should have an ArtistView as parent hack?
         result = self.__modelview__.get(key, artist = self.__parent__.name)
         if not result:
-            raise KeyError, key
+            raise KeyError(key)
 
         result.__parent__ = self
         result.__name__ = key
@@ -114,7 +114,7 @@ class TrackModel(BaseModel):
         key = uuid.UUID(key)
         result = self.__modelview__.get(key)
         if not result:
-            raise KeyError, key
+            raise KeyError(key)
 
         result.__parent__ = self
         result.__name__ = key
@@ -132,7 +132,7 @@ class DownloadModel(BaseModel):
         """
         no need for this
         """
-        raise KeyError, key
+        raise KeyError(key)
 
     def get_track_file(self, track_id):
         result = TrackModel.__modelview__.get(uuid.UUID(track_id))
@@ -174,7 +174,7 @@ class DownloadModel(BaseModel):
 class AdminModel(BaseModel):
 
     def __getitem__(self, key):
-        raise KeyError,key
+        raise KeyError(key)
 
     def get_mounts(self):
         """
@@ -222,10 +222,10 @@ class AdminModel(BaseModel):
                     return True, ""
                 else:
                     return (False,
-                            "Mount point %s is not readable by this application " % path)
+               "Mount point %s is not readable by this application " % path)
             else:
                 return (False,
-                        "Mount point %s or it's parent path is already registered" % path)
+          "Mount point %s or it's parent path is already registered" % path)
         else:
             return False, "Mount point %s does not exist" % path
 
