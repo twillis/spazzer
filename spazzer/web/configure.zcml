@@ -4,9 +4,15 @@
   <include package="repoze.bfg.includes" />
 
   <view
+      for=".models.SiteModel"
+      view=".views.home"
+      renderer="templates/browse.pt"/>
+
+  <view
       for=".models.CollectionModel"
       view=".views.browse"
       renderer="templates/browse.pt"/>
+
 
   <view
       for=".models.CollectionModel"

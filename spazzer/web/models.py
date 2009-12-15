@@ -161,7 +161,7 @@ class DownloadModel(BaseModel):
         album = request.params.get("album")
         year = request.params.get("year")
         track = request.params.get("track")
-        print artist, album, track, year
+
         if track:
             return  self.get_track_file(track)
         else:

@@ -20,17 +20,29 @@ VALID_XTNS = [F_MP3, F_FLAC]
 FS_ENC = sys.getfilesystemencoding()
 
 RECORD_CACHE = None
+MOUNT_CACHE = None
+
+
+def generate_record_cache():
+    return dict(FileRecord.query(
+            FileRecord.file_name, FileRecord).all())
 
 
 def get_file_from_db(file_name):
     global RECORD_CACHE
-    if not RECORD_CACHE:
-        print "generating record cache for this run..."
-        RECORD_CACHE = dict(FileRecord.query(
-            FileRecord.file_name, FileRecord).all())
-        print "record cache generated"
+    if RECORD_CACHE:
+        return RECORD_CACHE.get(file_name)
+    else:
+        return FileRecord.query().filter(
+            FileRecord.file_name == file_name).first()
 
-    return RECORD_CACHE.get(file_name)
+
+def get_mounts():
+    global MOUNT_CACHE
+    if MOUNT_CACHE:
+        return MOUNT_CACHE
+    else:
+        return MountPoint.query().all()
 
 
 def get_metadata_mp3(f):
@@ -125,12 +137,16 @@ class Scanner(object):
     def __call__(self):
         global RECORD_CACHE
         RECORD_CACHE = None
+
         global MOUNT_CACHE
         MOUNT_CACHE = None
 
         mounts = get_mounts()
+        MOUNT_CACHE = mounts
 
-        get_file_from_db("")
+        print "generating record cache.."
+        RECORD_CACHE = generate_record_cache()
+        print "record cache generated"
 
         items_to_remove = []
 
@@ -146,21 +162,17 @@ class Scanner(object):
             for f in scan_dir(dir, self.last_update, self._check):
                 self.callback(f)
 
-MOUNT_CACHE = None
-
-
-def get_mounts():
-    global MOUNT_CACHE
-    if not MOUNT_CACHE:
-        MOUNT_CACHE = MountPoint.query().all()
-
-    return MOUNT_CACHE
+        #cleanup
+        MOUNT_CACHE = None
+        RECORD_CACHE = None
 
 
 def is_contained(path):
     """
     check to make sure path does not sit on a path already registered
     """
+    if not path.endswith(os.path.sep):
+        path = "%s%s" % (path, os.path.sep)
 
     part = path
 
@@ -169,7 +181,7 @@ def is_contained(path):
             ((os.path.dirname(m.mount), m.mount) for m in get_mounts())):
             return True
         else:
-            part = os.path.split(part)[0]
+            part = os.path.dirname(part)
 
     return False
 

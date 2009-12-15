@@ -40,13 +40,30 @@ def search(context, request):
         tracks = []
 
     return {
-        "artists": render_artists(artists, request, context),
-        "albums": render_albums(context, request, albums or []),
-        "tracks": render_tracks(tracks, request, show_artist = True)}
+        "artists": render_artists(artists,
+                                  request,
+                                  context),
+        "albums": render_albums(context,
+                                request,
+                                albums or [],
+                                show_artist = True),
+        "tracks": render_tracks(tracks,
+                                request,
+                                show_artist = True),
+        "criteria": criteria}
+
+
+def home(context, request):
+    return browse(context["collection"], request)
 
 
 def browse(context, request):
-    return {"items": "", "title": "list", "index": FILTER_INDEX, "keys": keys}
+    return {"items": "",
+            "title": "Browse",
+            "index": FILTER_INDEX,
+            "keys": keys,
+            "context": context,
+            "request": request}
 
 
 def view_manage(context, request):
@@ -75,7 +92,12 @@ def view_albums(context, request):
     return Response(render_albums(context, request))
 
 
-def render_albums(context, request, albums = None):
+def render_albums(context,
+                  request,
+                  albums = None,
+                  show_artist = False,
+                  artist_context = None):
+    
     request.url_quote = quote
     if albums is None:
         key = request.params.get("artist")
@@ -92,7 +114,9 @@ def render_albums(context, request, albums = None):
                            request = request,
                            context = context,
                            artist = artist,
-                           ftt = f_track_title)
+                           ftt = f_track_title,
+                           fat = f_album_title(show_artist),
+                           artist_context = artist)
 
 
 def serve(context, request):
@@ -143,18 +167,25 @@ def render_tracks(items, request, show_artist = False):
                            ftt = f_track_title(show_artist))
 
 
+def f_album_title(show_artist = True):
+    _show = show_artist
+
+    def _x(album):
+        if _show:
+            return "%s by %s" % (album.name or "(Unknown)", album.artist )
+        else:
+            return album.name or "(Unknown)"
+    return _x
+
+
 def f_track_title(show_artist = False):
     _show = show_artist
 
     def _x(track):
         track_title = track.title or u'(Unknown)'
         if _show:
-            if track.artist:
-                return u"%s by %s" % (track_title,
-                                      track.artist or u'(Unknown)')
-            else:
-                return u"%s by %s" % (track_title, u'(Unknown)')
+            return u"%s by %s" % (track_title,
+                                  track.artist or u'(Unknown)')
         else:
             return track_title
-
     return _x

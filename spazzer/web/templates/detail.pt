@@ -1,10 +1,10 @@
 <ul xmlns:tal="http://xml.zope.org/namespaces/tal"
     class="album-list data-list list">
     <li class="album-item" tal:repeat="item albums">
-      <h3>${unicode(item)}&nbsp;&nbsp;<a class="download-link" href="${'%s/download/?artist=%s&amp;album=%s' % (request.application_url,request.url_quote(unicode(artist.name if artist else '')) ,request.url_quote(unicode(item.name)))}">(download)</a></h3>
+      <h3>${fat(item)}&nbsp;&nbsp;<a class="download-link" href="${'%s/download/?artist=%s&amp;album=%s' % (request.application_url,request.url_quote(unicode(artist.name if artist else '')) ,request.url_quote(unicode(item.name)))}">(download)</a></h3>
 	<ol class="album-content list">
 	  <li tal:repeat="track in item.get_tracks()">
-	      <span tal:content="ftt(track.on_compilation())(track)">track</span>&nbsp;&nbsp;<a class="download-link" href="${'%s/download/?track=%s' % (request.application_url,str(track.id))}">download</a>
+	      <span tal:attributes="class 'relevant-track track-title' if track.on_compilation() and artist_context and track.artist == artist_context.name else 'track-title' " tal:content="ftt(track.on_compilation())(track)">track</span>&nbsp;&nbsp;<a class="download-link" href="${'%s/download/?track=%s' % (request.application_url,str(track.id))}">download</a>
 	   </li>
 	</ol>
     </li>

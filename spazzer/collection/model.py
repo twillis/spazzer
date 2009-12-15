@@ -45,10 +45,18 @@ def cleanse_filename(fname):
 class MountPoint(Base, Queryable):
     __tablename__ = "mount_points"
     id = id_column()
-    mount = Column(Unicode(1024), unique = True)
+    _mount = Column("mount", Unicode(1024), unique = True)
 
     def __init__(self, mount):
-        self.mount = mount
+        self._mount = mount
+
+    def _get_mount(self):
+        if not self._mount.endswith(os.path.sep):
+            return "%s%s" % (self._mount, os.path.sep)
+        else:
+            return self._mount
+
+    mount = property(_get_mount)
 
 
 class FileRecord(Base, Queryable):
@@ -258,7 +266,7 @@ class AlbumView(object):
         elif len(artists) == 1:
             return artists[0][0]
         else:
-            return "Unknown"
+            return "(Unknown)"
 
     artist = property(_get_artist)
 

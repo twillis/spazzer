@@ -40,6 +40,12 @@
 
 .track-list{
     font-size:80%;
+    font-weight:bolder;
+}
+
+.relevant-track{
+    color:red;
+
 }
 
 #navigation > ul{

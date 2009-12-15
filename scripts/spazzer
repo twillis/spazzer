@@ -4,12 +4,10 @@ launches an instance of spazzer
 """
 import os
 import spazzer
-ETC_DIR = os.path.join(os.path.dirname(spazzer.__file__),"etc")
-
 import sys
 from paste.deploy import loadapp
 from paste import httpserver as server
+
+ETC_DIR = os.path.join(os.path.dirname(spazzer.__file__), "etc")
 app = loadapp("config:%s/config.ini" % ETC_DIR)
-
-server.serve(app,port=8088)
-
+server.serve(app,host = 0.0.0.0, port = 8088)

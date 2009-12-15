@@ -45,14 +45,23 @@ $(function(){
     <div id="results" class="ui-widget-content">
 	<div id="artist-results" class="results">
 	  <h3>Artists</h3>
+	  <p class="info">
+	    Artists whose name contains '${criteria}'
+	  </p>
 	  <span tal:replace="structure artists"/>
 	</div>
 	<div id="album-results" class="results">
 	  <h3>Albums</h3>
+	  <p class="info">
+	    Albums whose name contains '${criteria}'
+	  </p>
 	  <span tal:replace="structure albums">Album</span>
 	</div>
 	<div id="track-results" class="results">
 	  <h3>Tracks</h3>
+	  <p class="info">
+	    Tracks whose title contains '${criteria}'
+	  </p>
 	  <span tal:replace="structure tracks"/>
 	</div>
     </div>

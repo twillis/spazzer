@@ -17,25 +17,35 @@
     </ul>
   </div>
   <div class="ui-widget-content">
-    <h4>Collection Mounts</h4>
-    <ul>
-      <li tal:repeat="mount in mounts">
-	${mount.mount}
-	<form action="?POST=1&amp;DELETE=1" method="POST">
-	  <input type="hidden" name="mount" value="${mount.id}"/>
-	  <input type="image" alt="Remove" src="${request.application_url}/static/css/custom-theme/images/remove.png"/>
-	</form>
-      </li>
-    </ul>
-    <div id="add-mount">
-      <form action="?POST" method="POST">
-	<input type="text" name="mount"/>
-	<input type="image" alt="Add" src="${request.application_url}/static/css/custom-theme/images/add.png"/>
-      </form>
-    </div>
+    <h2>Collection Mounts</h2>
+    <table class="mount-table">
+      <tr tal:repeat="mount in mounts">
+	<td class="mount-cell">${mount.mount}</td>
+	<td class="action-cell">
+	  <form action="?POST=1&amp;DELETE=1" method="POST">
+	    <input type="hidden" name="mount" value="${mount.id}"/>
+	    <input type="image" alt="Remove" 
+		   src="${request.application_url}/static/css/custom-theme/images/remove.png"/>
+	  </form>
+	</td>
+      </tr>
+      <tr>
+	<td><h4>Add a new mount</h4></td>
+	<td>
+	  <div id="add-mount">
+	    <form action="?POST" method="POST">
+	      <input type="text" name="mount"/>
+	      <input type="image" alt="Add" 
+		     src="${request.application_url}/static/css/custom-theme/images/add.png"/>
+	    </form>
+	  </div>
+	</td>
+      </tr>
+    </table>
     <hr/>
     <form action="?POST=1&amp;SCAN=1" method="POST">
-	<input type="image" value="update" src="${request.application_url}/static/css/custom-theme/images/update.png"/>
+	<input type="image" value="update" 
+	       src="${request.application_url}/static/css/custom-theme/images/update.png"/>
     </form>
     <div class="error-message" tal:content="message"/>
   </div>
