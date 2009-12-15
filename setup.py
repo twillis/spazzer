@@ -38,7 +38,7 @@ setup(name = 'spazzer',
       app = spazzer.web.run:app
 
       [paste.paster_command]
-      scan = spazzer.collection.scanner:ScannerCommand
+      spazzer-scan = spazzer.collection.scanner:ScannerCommand
       """,
       scripts = ["scripts/spazzer"]
       )

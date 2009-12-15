@@ -258,7 +258,7 @@ Please specify a CONFIG_FILE"""%
         self.errors = []
 
         scanner = Scanner([m[0] for m in \
-                               session.query(MountPoint.mount).all()],
+                               session.query(MountPoint._mount).all()],
                           callbackNew = self._callback,
                           last_update = self.last_modified,
                           callbackOld = self._prune)

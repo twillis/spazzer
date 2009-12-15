@@ -38,6 +38,7 @@ def search(context, request):
         artists = []
         albums = []
         tracks = []
+        criteria = None
 
     return {
         "artists": render_artists(artists,
@@ -172,9 +173,13 @@ def f_album_title(show_artist = True):
 
     def _x(album):
         if _show:
-            return "%s by %s" % (album.name or "(Unknown)", album.artist )
+            return "%s - %s by %s" % (album.name or "(Unknown)",
+                                      album.year or "(Unknown)",
+                                      album.artist )
         else:
-            return album.name or "(Unknown)"
+            return "%s - %s" % (album.name or "(Unknown)",
+                                      album.year or "(Unknown)")
+
     return _x
 
 
