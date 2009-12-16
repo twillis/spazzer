@@ -16,7 +16,7 @@
 .artist-content{
     background-color:#ffffff;
 }
-.download-link{
+.download-link, .play-link{
     text-decoration:none;
     font-weight:bold;
 }
@@ -68,3 +68,26 @@
     padding:1em;
 }
 
+#player, #search{
+    text-align:right;
+    padding-top:.25em;
+    padding-bottom:.25em;
+}
+
+.album-table{
+    width:100%;
+    max-width:800px;
+}
+
+.index-cell{
+ width:2em;
+}
+
+.action-cell{
+text-align:right;
+width:33%;
+}
+
+tr.track-row:hover{
+ background-color:#d4d4d4;
+}
