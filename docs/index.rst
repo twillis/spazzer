@@ -73,6 +73,9 @@ installing this into your system `python`_ installation you will need to
 run this command as a user that has permissions to write files into
 the python distribution such as an Administrator.
 
+Creating an Instance
+~~~~~~~~~~~~~~~~~~~~
+
 
 Running Spazzer
 ---------------

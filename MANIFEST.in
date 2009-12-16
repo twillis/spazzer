@@ -1,6 +1,7 @@
 include MANIFEST.in
 include CHANGES.txt
 recursive-include spazzer/web/templates *
+recursive-include spazzer/templates *
 include spazzer/web/configure.zcml
 include spazzer/etc/config.ini
 graft docs

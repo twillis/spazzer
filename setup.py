@@ -11,7 +11,10 @@ requires = ['repoze.bfg',
             'mutagen',
             'sqlalchemy',
             'alchemyextra',
-            'zope.sqlalchemy']
+            'zope.sqlalchemy',
+            "Paste>=1.7.2",
+            "PasteDeploy>=1.3.3",
+            "PasteScript>=1.7.3"]
 
 setup(name = 'spazzer',
       version = '0.0',
@@ -39,6 +42,9 @@ setup(name = 'spazzer',
 
       [paste.paster_command]
       spazzer-scan = spazzer.collection.scanner:ScannerCommand
+
+      [paste.paster_create_template]
+      spazzer-instance = spazzer.config:InstanceTemplate
       """,
       scripts = ["scripts/spazzer"]
       )

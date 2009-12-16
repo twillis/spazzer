@@ -1,0 +1,17 @@
+#!/usr/bin/env python
+"""
+launches {{project}}
+"""
+import os
+import spazzer
+import sys
+from paste.deploy import loadapp
+from paste import httpserver as server
+
+ETC_DIR = os.path.join(
+    os.path.dirname(
+        os.path.dirname(
+            os.path.abspath(__file__))),
+    "etc")
+app = loadapp("config:%s/config.ini" % ETC_DIR)
+server.serve(app,host = "0.0.0.0", port = {{server_port}})

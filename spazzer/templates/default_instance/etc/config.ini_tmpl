@@ -1,0 +1,6 @@
+[DEFAULT]
+debug = false
+sqlalchemy.url = sqlite:///%(here)s/../var/collection.db
+
+[app:main]
+use = egg:spazzer#app
