@@ -15,6 +15,9 @@ Base = declarative_base()
 
 
 class Queryable(object):
+    """
+    adds query class method as a convenience.
+    """
 
     @classmethod
     def query(cls, *attrs):
@@ -28,6 +31,12 @@ class Queryable(object):
 
 
 def cleanse_filename(fname):
+    """
+    make filename safe for fat32(lowest common denominator)
+    since we're going off tag info which can (and likely will) include
+    characters that are not handled too well in a filename. this function
+    will just replace any offending characters with "_"
+    """
     fname = os.path.split(fname)[1]
     INVALID = u"\"*/:<>?\\|"
     VALID_RANGE = range(128)
@@ -43,14 +52,23 @@ def cleanse_filename(fname):
 
 
 class MountPoint(Base, Queryable):
+    """
+    A collection is made up of filesystem mountpoints(directories).
+    we hold them for periodic scanning in the db rather than
+    make the user edit another config file.
+    """
     __tablename__ = "mount_points"
-    id = id_column()
+    id = id_column() #perhaps superfulous
     _mount = Column("mount", Unicode(1024), unique = True)
 
     def __init__(self, mount):
         self._mount = mount
 
     def _get_mount(self):
+        """
+        depending on how it was saved to db we may need to append a path
+        sep so that we can traverse up the rest of it during scanning
+        """
         if not self._mount.endswith(os.path.sep):
             return "%s%s" % (self._mount, os.path.sep)
         else:
@@ -60,6 +78,15 @@ class MountPoint(Base, Queryable):
 
 
 class FileRecord(Base, Queryable):
+    """
+    tag information that was gleaned from a file during scan.
+    as far as I can figure, there's no reasonable way to de-normalize this
+    without making assumptions that will be invalid by someone's obscure
+    music taste. So the approach is we are merely indexing the tagf information
+    and providing canned queries to help navigate to what you want to hear.
+
+    anything else is an excercise in enginering masturbation in my opinion.
+    """
     __tablename__ = "files"
     id = id_column()
     file_name = Column(Unicode(1024), unique = True, index = True)
@@ -73,10 +100,16 @@ class FileRecord(Base, Queryable):
 
     @classmethod
     def get_by_id(cls, id):
+        """
+        by primary key (uuid)
+        """
         return cls.query().get(id)
 
     @classmethod
     def get_by_filename(cls, file_name):
+        """
+        by unique filename, needs entire path
+        """
         return cls.query().filter(cls.file_name == file_name).first()
 
     def __init__(self, file_name, create_date, modify_date,
@@ -101,7 +134,9 @@ class FileRecord(Base, Queryable):
                title = None,
                year = None,
                track = None):
-
+        """
+        set all attributes
+        """
         self.create_date = create_date
         self.modify_date = modify_date
         self.artist = artist
@@ -111,6 +146,9 @@ class FileRecord(Base, Queryable):
         self.title = title
 
     def on_compilation(self):
+        """
+        is this track on an album that has multiple artists?
+        """
         if not hasattr(self, "__compilation"):
             self.__compilation = self.query(FileRecord.artist).filter(
                 FileRecord.album == self.album).filter(
@@ -118,6 +156,9 @@ class FileRecord(Base, Queryable):
         return self.__compilation
 
     def _safe_file_name(self):
+        """
+        generate a fat32 safe filename based on information in the tags
+        """
         FMT_STR = "%s - %s - %s (%d) - %s%s"
         return cleanse_filename(FMT_STR % (self.track,
                                             self.artist.replace("/", "\\"),
@@ -145,7 +186,12 @@ class ArtistView(object):
 
     @classmethod
     def search(cls, criteria = None):
+        """
+        Find by artist name, handles the case where 'Artist' and 'The Artist'
+        are regarded as the same artist depending on how pretentious you are.
+        """
         qry = cls.query()
+
         if criteria:
             qry = qry.filter(or_(
                 FileRecord.artist.like(u"%s" % criteria),
@@ -160,6 +206,10 @@ class ArtistView(object):
 
     @classmethod
     def get(cls, name):
+        """
+        find by exact artist name, we're pretending that we have a table
+        of artists whose primary key is name.
+        """
         result = cls.query().filter(FileRecord.artist==name).first()
 
         if result and len(result)>0:
@@ -169,13 +219,20 @@ class ArtistView(object):
 
     def __repr__(self):
         return self.name
-        return self.name.title()
 
     def get_albums(self):
+        """
+        here for convenience, dispatch to AlbumView
+        """
         return AlbumView.get_by_artist(self.name)
 
 
 class AlbumView(object):
+    """
+    respresents an album in the collection. and album is loosely defined to
+    be a unique(title,year), though i'm sure there are edge cases which make
+    this false.
+    """
 
     def __init__(self, name, year):
         self.name = name
@@ -191,6 +248,10 @@ class AlbumView(object):
 
     @classmethod
     def get(cls, name, artist = None, year = None):
+        """
+        We're pretending we have a normalized database, and providing
+        a method to select by primary key optionally refined by artist
+        """
         qry = cls.query().filter(FileRecord.album==name)
 
         if artist:
@@ -207,6 +268,9 @@ class AlbumView(object):
 
     @classmethod
     def get_by_artist(cls, artist):
+        """
+        get all albums by artist sorted by year
+        """
         results = cls.query().filter(FileRecord.artist==artist).order_by(
             FileRecord.year).all()
         albums = []
@@ -223,6 +287,9 @@ class AlbumView(object):
 
     @classmethod
     def search(cls, criteria = None):
+        """
+        find album where album.name like criteria
+        """
         qry = cls.query()
         if criteria:
             qry = qry.filter(FileRecord.album.like(u"%%%s%%" % criteria))
@@ -236,6 +303,7 @@ class AlbumView(object):
 
     def get_zip_file(self):
         """
+        build zip file of all tracks associated with this album.
         relying on caller to close the string io
         """
         io = StringIO()
@@ -257,6 +325,10 @@ class AlbumView(object):
                length
 
     def _get_artist(self):
+        """
+        if multiple artists, then returns 'Various Artists' otherwise
+        the artist name or '(Unknown)' if the tag lacks an artist
+        """
         artists = FileRecord.query(FileRecord.artist).distinct().filter(
             FileRecord.album == self.name).filter(
             FileRecord.year == self.year).all()
@@ -272,6 +344,10 @@ class AlbumView(object):
 
 
 class TrackView(object):
+    """
+    nearly identical to filerecord, adds a bit more to present tracks like
+    they were coming from normalized data.
+    """
 
     def __init__(self, fileRecord):
         self.__record = fileRecord
@@ -282,10 +358,8 @@ class TrackView(object):
 
     @classmethod
     def get(cls, fid):
-        print "File Id: %s" % fid
         val = cls.query().get(fid)
         assert val is not None
-        print "File: %s" % val
         return cls(val)
 
     @classmethod

@@ -10,6 +10,13 @@ from repoze.bfg.url import model_url
 
 
 class BaseModel(object):
+    """
+    All models for traversal need to have an an initialized
+    __parent__ and __name__ attribute.
+
+    Child classes can specify a __modelview__ attribute for
+    convenience
+    """
     __modelview__ = None
 
     def __init__(self, name, parent = None):
@@ -17,10 +24,16 @@ class BaseModel(object):
         self.__parent__ = parent
 
     def get_url(self, request):
+        """
+        given the request, returns url to this model instance
+        """
         return model_url(self, request)
 
 
 class CollectionModel(BaseModel):
+    """
+    top-level model for the collection
+    """
     __modelview__ = ArtistView
 
     def __getitem__(self, key):
@@ -32,15 +45,6 @@ class CollectionModel(BaseModel):
             raise KeyError(key)
         result.__parent__ = self
         result.__name__ = key
-        #monkeypath
-        def _x_(view):
-
-            def _x(_key):
-                return view.models[_key]
-            return _x
-
-        result.models = dict(albums = AlbumModel("albums", result))
-        result.__getitem__ = _x_(result)
         return result
 
     def search_artists(self, criteria):
@@ -80,53 +84,13 @@ class CollectionModel(BaseModel):
         return self.__modelview__.search(search)
 
 
-class AlbumModel(BaseModel):
-    __modelview__ = AlbumView
-
-    def __getitem__(self, key):
-        #should have an ArtistView as parent hack?
-        result = self.__modelview__.get(key, artist = self.__parent__.name)
-        if not result:
-            raise KeyError(key)
-
-        result.__parent__ = self
-        result.__name__ = key
-
-        return result
-
-    def list_items(self, request):
-        if self.__modelview__ is None:
-            return None
-
-        if "search" in request.params:
-            search = u"\%%s\%" % request.params.get("search")
-        elif "start" in request.params:
-            search = u"%s\%" % request.params.get("start")
-        else:
-            search = None
-        return self.__modelview__.get_by_artist(self.__parent__.name)
-
-
-class TrackModel(BaseModel):
-    __modelview__ = TrackView
-
-    def __getitem__(self, key):
-        key = uuid.UUID(key)
-        result = self.__modelview__.get(key)
-        if not result:
-            raise KeyError(key)
-
-        result.__parent__ = self
-        result.__name__ = key
-        return result
-
-
 class DownloadModel(BaseModel):
     """
     all downloads should go through this...
     need to shove params into querystring because names can have '/'
     which screws up paths.
     """
+    __modelview__ = TrackView
 
     def __getitem__(self, key):
         """
@@ -135,7 +99,7 @@ class DownloadModel(BaseModel):
         raise KeyError(key)
 
     def get_track_file(self, track_id):
-        result = TrackModel.__modelview__.get(uuid.UUID(track_id))
+        result = self.__modelview__.get(uuid.UUID(track_id))
 
         if result:
             return (open(result.file_name, "rb"),
@@ -145,7 +109,7 @@ class DownloadModel(BaseModel):
             return None
 
     def get_album_file(self, album_name, artist = None, year = None):
-        result = AlbumModel.__modelview__.get(album_name, artist, year)
+        result = AlbumView.get(album_name, artist, year)
         if result:
             return result.get_zip_file()
         else:

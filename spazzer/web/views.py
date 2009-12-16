@@ -98,7 +98,7 @@ def render_albums(context,
                   albums = None,
                   show_artist = False,
                   artist_context = None):
-    
+
     request.url_quote = quote
     if albums is None:
         key = request.params.get("artist")
@@ -106,6 +106,7 @@ def render_albums(context,
             artist = context[key]
         except KeyError, key:
             raise HTTPNotFound()
+
         albums = artist.get_albums()
     else:
         artist = None

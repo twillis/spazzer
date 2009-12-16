@@ -24,11 +24,18 @@ MOUNT_CACHE = None
 
 
 def generate_record_cache():
+    """
+    in the case of scanning the collection, we generate this ahead of time
+    to save time
+    """
     return dict(FileRecord.query(
             FileRecord.file_name, FileRecord).all())
 
 
 def get_file_from_db(file_name):
+    """
+    consult the cache if it exists, otherwise go straight to the db
+    """
     global RECORD_CACHE
     if RECORD_CACHE:
         return RECORD_CACHE.get(file_name)
@@ -38,6 +45,10 @@ def get_file_from_db(file_name):
 
 
 def get_mounts():
+    """
+    in the case of scanning the collection, we generate this ahead of time
+    to save time.
+    """
     global MOUNT_CACHE
     if MOUNT_CACHE:
         return MOUNT_CACHE
@@ -46,10 +57,16 @@ def get_mounts():
 
 
 def get_metadata_mp3(f):
+    """
+    metadata parser for mp3s
+    """
     return dict(EasyID3(f).items())
 
 
 def get_metadata_flac(f):
+    """
+    metadata parser for flac
+    """
     return dict(FLAC(f).items())
 
 
@@ -86,7 +103,8 @@ def scan_dir(d, last_update = datetime(1900, 1, 1), check_extra = None):
     """
     walk directory for each file with extension in VALID_XTNS, yield metadata
     can be further filtered by comparing modified time of file against
-    last_update
+    last_update and a check_extra callable which gets passed a file_name
+    if it returns true, the parsing will proceed.
     """
     d = os.path.abspath(d)
     for r, dirs, files in os.walk(d):
@@ -98,16 +116,25 @@ def scan_dir(d, last_update = datetime(1900, 1, 1), check_extra = None):
             stats = os.stat(x)
             file_update = datetime.fromtimestamp(stats[stat.ST_MTIME])
 
-            if not check_extra or (check_extra and check_extra(x)) or \
+            if (not check_extra or (check_extra and check_extra(x))) and \
                 (not last_update or (last_update and \
                         last_update < file_update)):
-                rec = RECORD_CACHE.get(x)
+                rec = get_file_from_db(x)
                 if not rec or (rec and file_update > rec.modify_date):
                     print "need metadata for %s" % x
                     yield get_metadata(x)
 
 
 class Scanner(object):
+    """
+    callable to kick off the scan job.
+
+    dirs - list of directories to walk
+    last_update - if less than, ignore
+    callbackNew - called when new metadata is found
+    check - called to determine whether to proceed in parsing the file
+    callbackOld - called when a file is no longer valid in the collection
+    """
 
     def __init__(self,
                  dirs,
@@ -134,22 +161,33 @@ class Scanner(object):
         print "path to be pruned... %s" % "\n".join(
             (r.file_name for r in reclist))
 
-    def __call__(self):
+    def _setup(self):
+        """
+        initialize caches for this run
+        """
         global RECORD_CACHE
         RECORD_CACHE = None
 
         global MOUNT_CACHE
         MOUNT_CACHE = None
 
-        mounts = get_mounts()
-        MOUNT_CACHE = mounts
+
+        MOUNT_CACHE = get_mounts()
 
         print "generating record cache.."
         RECORD_CACHE = generate_record_cache()
         print "record cache generated"
 
-        items_to_remove = []
+    def _teardown(self):
+        #cleanup
+        MOUNT_CACHE = None
+        RECORD_CACHE = None
 
+    def _do_prune(self):
+        items_to_remove = []
+        global RECORD_CACHE
+
+        mounts = get_mounts()
         for f, r in RECORD_CACHE.items():
             if not mounts or (mounts and not is_contained(f))\
                    or not os.path.exists(f):
@@ -158,13 +196,16 @@ class Scanner(object):
         if len(items_to_remove) > 0:
             self._prune(items_to_remove)
 
+    def _do_scan(self):
         for dir in self.dirs:
             for f in scan_dir(dir, self.last_update, self._check):
                 self.callback(f)
 
-        #cleanup
-        MOUNT_CACHE = None
-        RECORD_CACHE = None
+    def __call__(self):
+        self._setup()
+        self._do_prune()
+        self._do_scan()
+        self._teardown()
 
 
 def is_contained(path):
