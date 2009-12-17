@@ -76,19 +76,56 @@ the python distribution such as an Administrator.
 Creating an Instance
 ~~~~~~~~~~~~~~~~~~~~
 
+Once spazzer has been successfully installed, you are ready to create
+an instance to run. The reason you create an instance to run is so
+that you can have multiple instances for different reasons or in the
+case of a machine used by many users, each user can have their own
+configuration. 
+
+In other words, your view of your music collection does not have to
+include your 10 year old daughters Hannah Montana collection that she
+begged to buy you from amazon a while back.
+
+When spazzer was installed a new command should have been put in your
+path called "spazzer-create" running this command will walk you
+through creating an instance that you can run. ::
+
+  $ spazzer-create col
+
+Where "col" is the name you want to give to the directory that will
+store all your files necessary to run spazzer. You will be prompted to
+enter a port number, or you can accept the default (8088). When the
+command completes you will have a directory called whatever you named
+it.
+
 
 Running Spazzer
 ---------------
 
-If all the prerequisites have been met, and spazzer was installed
-successfully, a new command will be available called "spazzer", when
-run will launch a webserver on port 8088. ::
+Once you have created an instance you are ready to run your new
+spazzer site. Inside the directory where your spazzer instance was
+created there are some commands
 
-  $ spazzer
+run.sh/run.bat
+~~~~~~~~~~~~~~
 
-You can then access it via a web browser at the following url. ::
+To run your spazzer instance you will need to run either "run.bat" on
+windows, or "run.sh" on presumably everything else. These commands are
+inside your spazzer instance directory
 
- http://localhost:8088/collection
+On Linux::
+
+  $ sh col/run.sh
+
+On Windows::
+
+  c:\> col\run.bat
+
+At this point you should have it running, you can then access it via 
+a web browser at the following url. If you accepted the default port
+setting ::
+
+ http://localhost:8088/
 
 Setting up your collection
 --------------------------
@@ -112,6 +149,15 @@ from your index if they no longer exist in your collection, are no
 longer accessible, or are no longer contained in directories you have
 told spazzer to index.
 
+scan.bat/scan.sh
+----------------
+
+If ever you want to rescan your collection you can do it from the
+admin web page, or you can simply run the scan.bat command on windows
+or scan.sh on everything that's not windows.
+
+If you have a large collection being indexed it can take a while the
+first time through. 
 
 .. _`python`: http://python.org/download/
 .. _`wsgi`: http://wsgi.org

@@ -1,8 +1,27 @@
-0.1
+0.5
 ---
 
 - feature complete with initial distribution
 
+- added manage interface
+
+- added search page
+
+- added pruning as part of scan command to remove records from the
+  index that no longer exist on the filesystem or are no longer being
+  managed by spazzer.
+
+- added some caching logic to scanning to speed things up a little
+
+- added a simple flash mp3 player to provide in browser playback
+
+- switched from package based running to instance based running via
+  paste and paste templates, this makes the documentation a bit easier
+  to understand and use if you are not a python developer. Also has
+  the nice side effect of not blowing away your database when you
+  re-install. i hope to find an easier way to install things in the
+  future.
+ 
 0.0
 ---
 
