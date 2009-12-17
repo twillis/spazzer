@@ -1,0 +1,13 @@
+#!/bin/env python
+"""
+wrapper around paster create command invoking to ease documentation burden
+"""
+
+from paste.script import command
+import sys
+
+args = ["create", "-t", "spazzer-instance"]
+
+if len(sys.argv) > 1:
+   args.append(sys.argv[1])
+command.run(args)

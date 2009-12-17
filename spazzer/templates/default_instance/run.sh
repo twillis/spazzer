@@ -1,3 +1,3 @@
 #!/bin/bash
 cd `dirname "$0"`
-python ./bin/MyCollection
+paster serve ./etc/config.ini

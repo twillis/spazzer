@@ -4,3 +4,8 @@ sqlalchemy.url = sqlite:///%(here)s/../var/collection.db
 
 [app:main]
 use = egg:spazzer#app
+
+[server:main]
+use = egg:Paste#http
+host = 0.0.0.0
+port = {{server_port}}

@@ -26,7 +26,6 @@ class Queryable(object):
         """
         if len(attrs) == 0:
             attrs = [cls]
-        print attrs
         return _s().query(*attrs)
 
 

@@ -40,11 +40,11 @@ setup(name = 'spazzer',
       [paste.app_factory]
       app = spazzer.web.run:app
 
-      [paste.paster_command]
+      [paste.global_paster_command]
       spazzer-scan = spazzer.collection.scanner:ScannerCommand
 
       [paste.paster_create_template]
       spazzer-instance = spazzer.config:InstanceTemplate
       """,
-      scripts = ["scripts/spazzer"]
+      scripts = ["scripts/spazzer-create"]
       )

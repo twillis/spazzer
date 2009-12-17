@@ -1,5 +1,12 @@
-<ol xmlns:tal="http://xml.zope.org/namespaces/tal" class="track-content data-list list track-list">
-    <li tal:repeat="track in tracks">
-    	<span tal:content="ftt(track)">track</span>&nbsp;&nbsp;<a class="download-link" href="${'%s/download/?track=%s' % (request.application_url,str(track.id))}">download</a>
-	</li>
-</ol>
+<table xmlns:tal="http://xml.zope.org/namespaces/tal" class="track-content data-list list track-list">
+    <tr class="track-row" tal:repeat="track in tracks">
+    	<td class="track-cell" tal:content="ftt(track)">track</td>
+	<td class="action-cell"><a class="download-link" href="${'%s/download/?track=%s' % (request.application_url,str(track.id))}">download</a>
+	     &nbsp;&nbsp;
+	     <a class="play-link" 
+		href="#" onclick="play('${'%s/download/?track=%s' % (request.application_url,str(track.id))}')">
+	       play
+	     </a>
+	     </td>
+	</tr>
+</table>

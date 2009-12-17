@@ -93,6 +93,15 @@ def view_albums(context, request):
     return Response(render_albums(context, request))
 
 
+def compare_album_years(a, b):
+    if a.year > b.year:
+        return 1
+    elif a.year == b.year:
+        return 0
+    else:
+        return -1
+
+
 def render_albums(context,
                   request,
                   albums = None,
@@ -108,6 +117,14 @@ def render_albums(context,
             raise HTTPNotFound()
 
         albums = artist.get_albums()
+        #pull out duplicates that are due to multiple years on same album
+        aidx = dict()
+        for a in albums:
+            if a.name.lower() not in aidx:
+                aidx[a.name.lower()] = a
+
+        albums = aidx.values()
+        albums.sort(compare_album_years)
     else:
         artist = None
 
