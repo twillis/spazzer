@@ -6,12 +6,59 @@ from sqlalchemy.schema import Column
 from sqlalchemy.types import Unicode, Integer, DateTime
 from sqlalchemy.sql import or_
 from meta import _s
-from alchemyextra.schema import id_column
 import os
 from cStringIO import StringIO
 import zipfile
 
+from sqlalchemy import types
+try:
+    from sqlalchemy.dialects.mysql.base import MSBinary
+except ImportError:
+    from sqlalchemy.databases.mysql import MSBinary
+
+from sqlalchemy.schema import Column
+import uuid
+
+
 Base = declarative_base()
+
+
+class UUID(types.TypeDecorator):
+    """
+    UUID column type should be compatible with MS SqlServer guid type.
+    """
+    impl = MSBinary
+
+    def __init__(self):
+        self.impl.length = 16
+        types.TypeDecorator.__init__(self, length=self.impl.length)
+
+    def process_bind_param(self, value, dialect=None):
+        if value and isinstance(value, uuid.UUID):
+            return value.bytes
+        elif value and not isinstance(value, uuid.UUID):
+            raise ValueError('value %s is not a valid uuid.UUID' % value)
+        else:
+            return None
+
+    def process_result_value(self, value, dialect=None):
+        if value:
+            return uuid.UUID(bytes=value)
+        else:
+            return None
+
+    def is_mutable(self):
+        return False
+
+id_column_name = "id"
+
+
+def id_column():
+    """
+    util method for primary key column declaration with UUID type
+    """
+    import uuid
+    return Column(id_column_name, UUID(), primary_key=True, default=uuid.uuid4)
 
 
 class Queryable(object):

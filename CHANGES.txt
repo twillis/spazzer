@@ -1,3 +1,9 @@
+0.5.1
+-----
+
+- removed alchemyextra dependency
+
+
 0.5
 ---
 

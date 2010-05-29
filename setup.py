@@ -10,14 +10,13 @@ CHANGES = open(os.path.join(here, 'CHANGES.txt')).read()
 requires = ['repoze.bfg',
             'mutagen',
             'sqlalchemy',
-            'alchemyextra',
             'zope.sqlalchemy',
             "Paste>=1.7.2",
             "PasteDeploy>=1.3.3",
             "PasteScript>=1.7.3"]
 
 setup(name = 'spazzer',
-      version = '0.5',
+      version = '0.5.1',
       description = 'spazzer',
       long_description = README + '\n\n' + CHANGES,
       classifiers = [
@@ -46,5 +45,4 @@ setup(name = 'spazzer',
       [paste.paster_create_template]
       spazzer-instance = spazzer.config:InstanceTemplate
       """,
-      scripts = ["scripts/spazzer-create"]
-      )
+      scripts = ["scripts/spazzer-create"])
