@@ -6,7 +6,7 @@ from ..collection.meta import _s
 import transaction
 import uuid
 import os
-from repoze.bfg.url import model_url
+from pyramid.url import model_url
 
 
 class BaseModel(object):
@@ -19,7 +19,7 @@ class BaseModel(object):
     """
     __modelview__ = None
 
-    def __init__(self, name, parent = None):
+    def __init__(self, name, parent=None):
         self.__name__ = name
         self.__parent__ = parent
 
@@ -108,7 +108,7 @@ class DownloadModel(BaseModel):
         else:
             return None
 
-    def get_album_file(self, album_name, artist = None, year = None):
+    def get_album_file(self, album_name, artist=None, year=None):
         result = AlbumView.get(album_name, artist, year)
         if result:
             return result.get_zip_file()
@@ -153,20 +153,21 @@ class AdminModel(BaseModel):
             last_modified = last_modified[0]
         errors = []
 
-        def abort(): pass
+        def abort():
+            pass
 
         def _proc(info):
             process_file(info, errors, transaction.commit, abort)
 
         def _prune(*rec):
-            prune(*rec, committer = transaction.commit, rollbacker = abort)
+            prune(*rec, committer=transaction.commit, rollbacker=abort)
 
         scanner = Scanner([m.mount for m in \
                                self.get_mounts()],
-                          callbackNew = _proc,
-                          last_update = last_modified, callbackOld = _prune)
+                          callbackNew=_proc,
+                          last_update=last_modified, callbackOld=_prune)
         scanner()
-        return len(errors)==0, "\n".join(("%s:\n\t%s" % (info, ex)
+        return len(errors) == 0, "\n".join(("%s:\n\t%s" % (info, ex)
                                           for info, ex in errors))
 
     def remove_mount(self, m_id):
@@ -178,9 +179,9 @@ class AdminModel(BaseModel):
         """
         add mount point for future scanning
         """
-        if os.path.exists(path):#exists
-            if not is_contained(path):#not already registered
-                if os.access(path, os.R_OK):#can read
+        if os.path.exists(path):  # exists
+            if not is_contained(path):  # not already registered
+                if os.access(path, os.R_OK):  # can read
                     _s().add(MountPoint(path))
                     transaction.commit()
                     return True, ""

@@ -1,9 +1,10 @@
 from webob import Response
 from webob.exc import HTTPNotFound
-from repoze.bfg.chameleon_zpt import render_template
+from pyramid.chameleon_zpt import render_template
 from urllib import quote as url_quote
-
-
+from pyramid.view import view_config
+import models
+from ..collection import model as collections_models
 def quote(s):
     return url_quote(s.encode("utf-8"))
 
@@ -27,6 +28,8 @@ keys.reverse()
 keys.append("[#]")
 
 
+@view_config(context=models.CollectionModel, name="search",
+             renderer="templates/search.pt")
 def search(context, request):
     request.url_quote = url_quote
     if "POST" in request.params:
@@ -47,17 +50,19 @@ def search(context, request):
         "albums": render_albums(context,
                                 request,
                                 albums or [],
-                                show_artist = True),
+                                show_artist=True),
         "tracks": render_tracks(tracks,
                                 request,
-                                show_artist = True),
+                                show_artist=True),
         "criteria": criteria}
 
 
+@view_config(context=models.SiteModel, renderer="templates/browse.pt")
 def home(context, request):
     return browse(context["collection"], request)
 
 
+@view_config(context=models.CollectionModel, renderer="templates/browse.pt")
 def browse(context, request):
     return {"items": "",
             "title": "Browse",
@@ -66,7 +71,7 @@ def browse(context, request):
             "context": context,
             "request": request}
 
-
+@view_config(context=models.AdminModel, renderer="templates/manage.pt")
 def view_manage(context, request):
     if "POST" in request.params:
         if "DELETE" in request.params:
@@ -83,12 +88,13 @@ def view_manage(context, request):
     return {"mounts": mounts, "message": msg}
 
 
+@view_config(context=models.CollectionModel, name="data")
 def view_artist(context, request):
     request.url_quote = url_quote
     items = context.list_items(request)
     return Response(render_artists(items, request, context))
 
-
+@view_config(context=models.CollectionModel, name="detail")
 def view_albums(context, request):
     return Response(render_albums(context, request))
 
@@ -104,9 +110,9 @@ def compare_album_years(a, b):
 
 def render_albums(context,
                   request,
-                  albums = None,
-                  show_artist = False,
-                  artist_context = None):
+                  albums=None,
+                  show_artist=False,
+                  artist_context=None):
 
     request.url_quote = quote
     if albums is None:
@@ -129,15 +135,16 @@ def render_albums(context,
         artist = None
 
     return render_template("templates/detail.pt",
-                           albums = albums,
-                           request = request,
-                           context = context,
-                           artist = artist,
-                           ftt = f_track_title,
-                           fat = f_album_title(show_artist),
-                           artist_context = artist)
+                           albums=albums,
+                           request=request,
+                           context=context,
+                           artist=artist,
+                           ftt=f_track_title,
+                           fat=f_album_title(show_artist),
+                           artist_context=artist)
 
 
+@view_config(context=models.DownloadModel)
 def serve(context, request):
     """
     get's the file data from the context and dispatches off
@@ -158,7 +165,7 @@ def _serve(filebuf, filename, filesize):
     """
     request builder for serving files
     """
-    response = Response(content_type ="binary/octet-stream")
+    response = Response(content_type="binary/octet-stream")
     response.headers.add("Content-Disposition",
                          "attachment; filename=%s; size=%d" % (
             filename, filesize))
@@ -170,30 +177,30 @@ def _serve(filebuf, filename, filesize):
 def render_artists(items, request, context):
     request.url_quote = quote
     return render_template("templates/artist.pt",
-                           items = items,
-                           request = request, context = context)
+                           items=items,
+                           request=request, context=context)
 
 
-def render_tracks(items, request, show_artist = False):
+def render_tracks(items, request, show_artist=False):
     """
     render functions assemble pieces from the context
     """
     request.url_quote = quote
 
     return render_template("templates/tracks.pt",
-                           tracks = items,
-                           request = request,
-                           ftt = f_track_title(show_artist))
+                           tracks=items,
+                           request=request,
+                           ftt=f_track_title(show_artist))
 
 
-def f_album_title(show_artist = True):
+def f_album_title(show_artist=True):
     _show = show_artist
 
     def _x(album):
         if _show:
             return "%s - %s by %s" % (album.name or "(Unknown)",
                                       album.year or "(Unknown)",
-                                      album.artist )
+                                      album.artist)
         else:
             return "%s - %s" % (album.name or "(Unknown)",
                                       album.year or "(Unknown)")
@@ -201,7 +208,7 @@ def f_album_title(show_artist = True):
     return _x
 
 
-def f_track_title(show_artist = False):
+def f_track_title(show_artist=False):
     _show = show_artist
 
     def _x(track):

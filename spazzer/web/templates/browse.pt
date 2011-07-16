@@ -68,7 +68,7 @@ $(function(){
     </div>
   <div id="filter-widget" class="list">
     <ul>
-      <li tal:repeat="idx in keys">
+      <li tal:repeat="idx keys">
 	<a href="${context.get_url(request)}/${index[idx]}" 
 	   tal:content="idx">index</a>
       </li>

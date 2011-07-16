@@ -7,7 +7,7 @@ README = open(os.path.join(here, 'docs', 'index.rst')).read()
 CHANGES = open(os.path.join(here, 'CHANGES.txt')).read()
 
 
-requires = ['repoze.bfg',
+requires = ['pyramid',
             'mutagen',
             'sqlalchemy',
             'zope.sqlalchemy',

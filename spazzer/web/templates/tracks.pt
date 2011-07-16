@@ -1,5 +1,5 @@
 <table xmlns:tal="http://xml.zope.org/namespaces/tal" class="track-content data-list list track-list">
-    <tr class="track-row" tal:repeat="track in tracks">
+    <tr class="track-row" tal:repeat="track tracks">
     	<td class="track-cell" tal:content="ftt(track)">track</td>
 	<td class="action-cell"><a class="download-link" href="${'%s/download/?track=%s' % (request.application_url,str(track.id))}">download</a>
 	     &nbsp;&nbsp;

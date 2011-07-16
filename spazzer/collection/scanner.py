@@ -87,7 +87,7 @@ def build_metadata_processor():
         try:
             d = processors[os.path.splitext(f)[1].lower()](f)
             stats = os.stat(f)
-            d["file"] =f
+            d["file"] = f
             d["create_date"] = datetime.fromtimestamp(stats[stat.ST_CTIME])
             d["modify_date"] = datetime.fromtimestamp(stats[stat.ST_MTIME])
             return d
@@ -99,7 +99,7 @@ def build_metadata_processor():
 get_metadata = build_metadata_processor()
 
 
-def scan_dir(d, last_update = datetime(1900, 1, 1), check_extra = None):
+def scan_dir(d, last_update=datetime(1900, 1, 1), check_extra=None):
     """
     walk directory for each file with extension in VALID_XTNS, yield metadata
     can be further filtered by comparing modified time of file against
@@ -138,10 +138,10 @@ class Scanner(object):
 
     def __init__(self,
                  dirs,
-                 last_update = datetime(1900, 1, 1),
+                 last_update=datetime(1900, 1, 1),
                  callbackNew=None,
-                 check = None,
-                 callbackOld = None):
+                 check=None,
+                 callbackOld=None):
         self.dirs = dirs
         self.last_update = last_update
         self._callback = callbackNew or self._print
@@ -171,7 +171,6 @@ class Scanner(object):
         global MOUNT_CACHE
         MOUNT_CACHE = None
 
-
         MOUNT_CACHE = get_mounts()
 
         print "generating record cache.."
@@ -180,6 +179,8 @@ class Scanner(object):
 
     def _teardown(self):
         #cleanup
+        global MOUNT_CACHE
+        global RECORD_CACHE
         MOUNT_CACHE = None
         RECORD_CACHE = None
 
@@ -245,7 +246,7 @@ class ScannerCommand(Command):
                       action="store",
                       type="string",
                       dest="last_modified",
-    help = "only process files who have been updated since YYYY-MM-DD HH:MM")
+    help="only process files who have been updated since YYYY-MM-DD HH:MM")
 
     parser.add_option("--section",
                       action="store",
@@ -269,21 +270,21 @@ class ScannerCommand(Command):
         return self.options.section
 
     def get_config(self, name):
-        if len(self.args)==1:
+        if len(self.args) == 1:
             config_file = self.args[0]
             if not os.path.isfile(config_file):
                 raise BadCommand(
 """
 %s
 Error: CONFIG_FILE not found at %s%s.
-Please specify a CONFIG_FILE"""%
+Please specify a CONFIG_FILE""" %
                     (self.parser.get_usage(),
                     os.path.sep,
                     config_file))
             else:
                 config = appconfig("config:%s" % config_file,
-                                   name = name,
-                                   relative_to = os.getcwd())
+                                   name=name,
+                                   relative_to=os.getcwd())
                 return config
         else:
             raise BadCommand(self.parser.get_usage())
@@ -300,12 +301,12 @@ Please specify a CONFIG_FILE"""%
 
         scanner = Scanner([m[0] for m in \
                                session.query(MountPoint._mount).all()],
-                          callbackNew = self._callback,
-                          last_update = self.last_modified,
-                          callbackOld = self._prune)
+                          callbackNew=self._callback,
+                          last_update=self.last_modified,
+                          callbackOld=self._prune)
         scanner()
 
-        result = "with errors" if len(self.errors)>0 else "with no errors"
+        result = "with errors" if len(self.errors) > 0 else "with no errors"
         print "scanning complete %s" % result
 
         if len(self.errors):
@@ -327,8 +328,8 @@ def session_rollbacker():
     manage.meta._s().rollback()
 
 
-def prune(reclist, committer = session_committer,
-          rollbacker = session_rollbacker):
+def prune(reclist, committer=session_committer,
+          rollbacker=session_rollbacker):
     try:
         session = manage.meta._s()
         for r in reclist:
@@ -341,8 +342,8 @@ def prune(reclist, committer = session_committer,
         rollbacker()
 
 
-def process_file(info, errors, committer = session_committer,
-                 rollbacker = session_rollbacker):
+def process_file(info, errors, committer=session_committer,
+                 rollbacker=session_rollbacker):
     try:
         if "exception" in info:
             ex = info.pop("exception")
@@ -372,21 +373,21 @@ def process_file(info, errors, committer = session_committer,
                 rec = FileRecord(file_name,
                              create_date,
                              modify_date,
-                             artist = artist,
-                             album = album,
-                             title = title,
-                             year = year,
-                             track = track)
+                             artist=artist,
+                             album=album,
+                             title=title,
+                             year=year,
+                             track=track)
             elif rec.modify_date != modify_date:
                 rec.update(create_date,
                              modify_date,
-                             artist = artist,
-                             album = album,
-                             title = title,
-                             year = year,
-                             track = track)
+                             artist=artist,
+                             album=album,
+                             title=title,
+                             year=year,
+                             track=track)
             else:
-                rec = None #noop
+                rec = None  # noop
 
             try:
                 if rec:

@@ -24,7 +24,7 @@ $("#manage-content").hide().fadeIn("slow");
   <div id="manage-content" class="ui-widget-content">
     <h2>Collection Mounts</h2>
     <table class="mount-table">
-      <tr tal:repeat="mount in mounts">
+      <tr tal:repeat="mount mounts">
 	<td class="mount-cell">${mount.mount}</td>
 	<td class="action-cell">
 	  <form action="?POST=1&amp;DELETE=1" method="POST">

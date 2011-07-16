@@ -5,7 +5,7 @@ import meta
 from model import Base
 
 
-def init_model(session, engine = None):
+def init_model(session, engine=None):
     """
     must be called before using any of the model objects to setup
     metadata,sessionmaker etc....

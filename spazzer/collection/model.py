@@ -16,7 +16,6 @@ try:
 except ImportError:
     from sqlalchemy.databases.mysql import MSBinary
 
-from sqlalchemy.schema import Column
 import uuid
 
 
@@ -104,8 +103,8 @@ class MountPoint(Base, Queryable):
     make the user edit another config file.
     """
     __tablename__ = "mount_points"
-    id = id_column() #perhaps superfulous
-    _mount = Column("mount", Unicode(1024), unique = True)
+    id = id_column()  # perhaps superfulous
+    _mount = Column("mount", Unicode(1024), unique=True)
 
     def __init__(self, mount):
         self._mount = mount
@@ -135,14 +134,14 @@ class FileRecord(Base, Queryable):
     """
     __tablename__ = "files"
     id = id_column()
-    file_name = Column(Unicode(1024), unique = True, index = True)
-    artist = Column(Unicode(255), nullable = True, index = True)
-    album = Column(Unicode(255), nullable = True, index = True)
-    title = Column(Unicode(255), nullable = True, index = True)
-    year = Column(Integer, nullable = True, index = True)
-    track = Column(Integer, nullable = True)
-    create_date = Column(DateTime(), nullable = False)
-    modify_date = Column(DateTime(), nullable = False)
+    file_name = Column(Unicode(1024), unique=True, index=True)
+    artist = Column(Unicode(255), nullable=True, index=True)
+    album = Column(Unicode(255), nullable=True, index=True)
+    title = Column(Unicode(255), nullable=True, index=True)
+    year = Column(Integer, nullable=True, index=True)
+    track = Column(Integer, nullable=True)
+    create_date = Column(DateTime(), nullable=False)
+    modify_date = Column(DateTime(), nullable=False)
 
     @classmethod
     def get_by_id(cls, id):
@@ -175,11 +174,11 @@ class FileRecord(Base, Queryable):
                     track)
 
     def update(self, create_date, modify_date,
-               artist = None,
-               album = None,
-               title = None,
-               year = None,
-               track = None):
+               artist=None,
+               album=None,
+               title=None,
+               year=None,
+               track=None):
         """
         set all attributes
         """
@@ -217,6 +216,7 @@ class FileRecord(Base, Queryable):
 
 #These have nothing to do with db persistence, column/table mapping or anything
 
+
 class ArtistView(object):
     """
     Represents an Artist view of the collection
@@ -228,10 +228,10 @@ class ArtistView(object):
     @classmethod
     def query(cls):
         return FileRecord.query(FileRecord.artist).filter(
-            FileRecord.artist!=None).distinct()
+            FileRecord.artist != None).distinct()
 
     @classmethod
-    def search(cls, criteria = None):
+    def search(cls, criteria=None):
         """
         Find by artist name, handles the case where 'Artist' and 'The Artist'
         are regarded as the same artist depending on how pretentious you are.
@@ -256,9 +256,9 @@ class ArtistView(object):
         find by exact artist name, we're pretending that we have a table
         of artists whose primary key is name.
         """
-        result = cls.query().filter(FileRecord.artist==name).first()
+        result = cls.query().filter(FileRecord.artist == name).first()
 
-        if result and len(result)>0:
+        if result and len(result) > 0:
             return cls(*result)
         else:
             return None
@@ -293,12 +293,12 @@ class AlbumView(object):
             FileRecord.album != None).distinct()
 
     @classmethod
-    def get(cls, name, artist = None, year = None):
+    def get(cls, name, artist=None, year=None):
         """
         We're pretending we have a normalized database, and providing
         a method to select by primary key optionally refined by artist
         """
-        qry = cls.query().filter(FileRecord.album==name)
+        qry = cls.query().filter(FileRecord.album == name)
 
         if artist:
             qry = qry.filter(FileRecord.artist == artist)
@@ -307,7 +307,7 @@ class AlbumView(object):
             qry = qry.filter(FileRecord.year == year)
         result = qry.first()
 
-        if result and len(result)>0:
+        if result and len(result) > 0:
             return cls(*result)
         else:
             return None
@@ -317,7 +317,7 @@ class AlbumView(object):
         """
         get all albums by artist sorted by year
         """
-        results = cls.query().filter(FileRecord.artist==artist).order_by(
+        results = cls.query().filter(FileRecord.artist == artist).order_by(
             FileRecord.year).all()
         albums = []
         if results and len(results) > 0:
@@ -332,7 +332,7 @@ class AlbumView(object):
         return TrackView.get_by_album(self.name)
 
     @classmethod
-    def search(cls, criteria = None):
+    def search(cls, criteria=None):
         """
         find album where album.name like criteria
         """
@@ -379,7 +379,7 @@ class AlbumView(object):
             FileRecord.album == self.name).filter(
             FileRecord.year == self.year).all()
 
-        if len(artists)>1:
+        if len(artists) > 1:
             return "Various Artists"
         elif len(artists) == 1:
             return artists[0][0]
@@ -409,7 +409,7 @@ class TrackView(object):
         return cls(val)
 
     @classmethod
-    def search(cls, criteria = None):
+    def search(cls, criteria=None):
         qry = cls.query()
         if criteria:
             qry = qry.filter(FileRecord.title.like(u"%%%s%%" % criteria))
@@ -422,7 +422,7 @@ class TrackView(object):
         return results
 
     @classmethod
-    def get_by_album(cls, album, artist = None, year = None):
+    def get_by_album(cls, album, artist=None, year=None):
         qry = cls.query().filter(FileRecord.album == album)
 
         if artist:
@@ -433,7 +433,7 @@ class TrackView(object):
 
         results = qry.order_by(FileRecord.track).all()
         tracks = []
-        if results and len(results)>0:
+        if results and len(results) > 0:
             for result in results:
                 tracks.append(cls(result))
 
@@ -443,7 +443,7 @@ class TrackView(object):
     def get_by_artist(cls, artist):
         results = cls.query().filter(FileRecord.artist == artist)
         tracks = []
-        if results and len(results)>0:
+        if results and len(results) > 0:
             for result in results:
                 tracks.append(cls(result))
         return tracks
