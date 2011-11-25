@@ -1,8 +1,7 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml"
-      xmlns:tal="http://xml.zope.org/namespaces/tal">
-<head>
-  <title>Browse Collection</title>
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Browse Collection</title>
 	<link type="text/css" href="${request.application_url}/static/css/custom-theme/style.css" rel="stylesheet" />
 	<link type="text/css" href="${request.application_url}/static/css/site.css" rel="stylesheet" />
 	<script type="text/javascript" src="${request.application_url}/static/js/jquery-1.7.1.min.js"></script>
@@ -44,12 +43,12 @@ $(function(){
   });//end tabs
  });//end $
 </script>
-</head>
-<body>
+  </head>
+  <body>
   <div id="navigation">
     <ul>
-      <li><a href="${context.get_url(request)}">Browse</a></li>
-      <li><a href="${context.get_url(request)}search">Search</a></li>
+      <li><a href="${get_url(request)}">Browse</a></li>
+      <li><a href="${get_url(request)}search">Search</a></li>
       <li><a href="${request.application_url}/admin">Manage</a></li>
     </ul>
     <div id="player">
@@ -60,20 +59,21 @@ $(function(){
 </object>      
     </div>
   </div>
-    <div id="search">
-      <form action="${context.get_url(request)}search?POST" method="POST">
-	<input type="text" name="criteria"/>
-	<input type="submit" value="Search"/>
-      </form>
-    </div>
+  <div id="search">
+    <form action="${get_url(request)}search?POST" method="POST">
+      <input type="text" name="criteria"/>
+      <input type="submit" value="Search"/>
+    </form>
+  </div>
   <div id="filter-widget" class="list">
     <ul>
-      <li tal:repeat="idx keys">
-	<a href="${context.get_url(request)}/${index[idx]}" 
-	   tal:content="idx">index</a>
+      % for idx in keys:
+      <li>
+	<a href="${get_url(request)}/${index[idx]}">${idx}</a>
       </li>
+      %endfor
     </ul>
     </div>
-    <span tal:replace="structure items"/>
-</body>
+
+  </body>
 </html>

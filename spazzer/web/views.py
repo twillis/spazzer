@@ -29,7 +29,7 @@ keys.append("[#]")
 
 
 @view_config(context=models.CollectionModel, name="search",
-             renderer="templates/search.pt")
+             renderer="search.mako")
 def search(context, request):
     request.url_quote = url_quote
     if "POST" in request.params:
@@ -57,21 +57,21 @@ def search(context, request):
         "criteria": criteria}
 
 
-@view_config(context=models.SiteModel, renderer="templates/browse.pt")
+@view_config(context=models.SiteModel, renderer="browse.mako")
 def home(context, request):
     return browse(context["collection"], request)
 
 
-@view_config(context=models.CollectionModel, renderer="templates/browse.pt")
+@view_config(context=models.CollectionModel, renderer="browse.mako")
 def browse(context, request):
     return {"items": "",
             "title": "Browse",
             "index": FILTER_INDEX,
             "keys": keys,
-            "context": context,
-            "request": request}
+            "get_url": context.get_url}
 
-@view_config(context=models.AdminModel, renderer="templates/manage.pt")
+
+@view_config(context=models.AdminModel, renderer="manage.mako")
 def view_manage(context, request):
     if "POST" in request.params:
         if "DELETE" in request.params:

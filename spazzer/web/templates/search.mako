@@ -1,6 +1,5 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml"
-      xmlns:tal="http://xml.zope.org/namespaces/tal">
+<!DOCTYPE html>
+<html>
 <head>
   <title>Search Collection</title>
 	<link type="text/css" href="${request.application_url}/static/css/custom-theme/style.css" rel="stylesheet" />
@@ -37,8 +36,8 @@ $(function(){
 <body>
   <div id="navigation">
     <ul>
-      <li><a href="${context.get_url(request)}">Browse</a></li>
-      <li><a href="${context.get_url(request)}search">Search</a></li>
+      <li><a href="${request.context.get_url(request)}">Browse</a></li>
+      <li><a href="${request.context.get_url(request)}search">Search</a></li>
       <li><a href="${request.application_url}/admin">Manage</a></li>
     </ul>
     <div id="player">
@@ -61,21 +60,21 @@ $(function(){
 	  <p class="info">
 	    Artists whose name contains '${criteria}'
 	  </p>
-	  <span tal:replace="structure artists"/>
+	  <span>${artists|n}</span>
 	</div>
 	<div id="album-results" class="results">
 	  <h3>Albums</h3>
 	  <p class="info">
 	    Albums whose name contains '${criteria}'
 	  </p>
-	  <span tal:replace="structure albums">Album</span>
+	  <span>${albums|n}</span>
 	</div>
 	<div id="track-results" class="results">
 	  <h3>Tracks</h3>
 	  <p class="info">
 	    Tracks whose title contains '${criteria}'
 	  </p>
-	  <span tal:replace="structure tracks"/>
+	  <span>${tracks|n}</span>
 	</div>
     </div>
 </body>

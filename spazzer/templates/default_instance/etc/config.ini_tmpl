@@ -1,6 +1,7 @@
 [DEFAULT]
 debug = false
 sqlalchemy.url = sqlite:///%(here)s/../var/collection.db
+mako.directories = spazzer.web:templates
 
 [app:main]
 use = egg:spazzer#app

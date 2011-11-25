@@ -10,11 +10,11 @@ def app(global_config, **settings):
     """ This function returns a ``pyramid`` application object.  It
     is usually called by the PasteDeploy framework during ``paster
     serve``"""
-    config = {}
-    config.update(global_config)
-    config.update(settings)
-    setup_model(**config)
-    config = Configurator(root_factory=get_root, settings=settings)
+    combined_config = {}
+    combined_config.update(global_config)
+    combined_config.update(settings)
+    setup_model(**combined_config)
+    config = Configurator(root_factory=get_root, settings=combined_config)
     config.scan()
     config.add_static_view(name="static", path="spazzer.web:templates/static")
     return config.make_wsgi_app()

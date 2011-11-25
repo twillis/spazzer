@@ -1,6 +1,5 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml"
-      xmlns:tal="http://xml.zope.org/namespaces/tal">
+<!DOCTYPE HTML>
+<html>
 <head>
   <title>Manage Collection</title>
 	<link type="text/css" href="${request.application_url}/static/css/custom-theme/style.css" rel="stylesheet" />
@@ -24,7 +23,8 @@ $("#manage-content").hide().fadeIn("slow");
   <div id="manage-content" class="ui-widget-content">
     <h2>Collection Mounts</h2>
     <table class="mount-table">
-      <tr tal:repeat="mount mounts">
+	%for mount in mounts:
+      <tr>
 	<td class="mount-cell">${mount.mount}</td>
 	<td class="action-cell">
 	  <form action="?POST=1&amp;DELETE=1" method="POST">
@@ -34,6 +34,7 @@ $("#manage-content").hide().fadeIn("slow");
 	  </form>
 	</td>
       </tr>
+	%endfor
       <tr>
 	<td><h4>Add a new mount</h4></td>
 	<td>
