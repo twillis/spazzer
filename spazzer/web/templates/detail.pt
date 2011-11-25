@@ -1,7 +1,7 @@
 <ul xmlns:tal="http://xml.zope.org/namespaces/tal"
     class="album-list data-list list">
     <li class="album-item" tal:repeat="item albums">
-      <h3>${fat(item)}&nbsp;&nbsp;<a class="download-link" href="${'%s/download/?artist=%s&amp;album=%s' % (request.application_url,request.url_quote(unicode(artist.name if artist else '')) ,request.url_quote(unicode(item.name)))}">(download)</a></h3>
+     <h3>${fat(item)}&nbsp;&nbsp;<a class="download-link" href="${'%s/download/?artist=%s&amp;album=%s' % (request.application_url,request.url_quote(unicode(artist.name if artist else '')) ,request.url_quote(unicode(item.name)))}">(download)</a></h3>
       <table class="album-table">
 	<tr class="track-row" 
 	    tal:repeat="track item.get_tracks()">

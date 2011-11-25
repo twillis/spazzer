@@ -13,49 +13,10 @@
 	<script type="text/javascript" src="${request.application_url}/static/js/jquery-1.7.1.min.js"></script>
 	<script type="text/javascript"
 	src="${request.application_url}/static/js/jquery-ui-1.8.16.custom.min.js"></script>
-	<script type="text/javascript" src="${request.application_url}/static/js/jQuery.jPlayer.2.1.0/jquery.jplayer.min.js"></script>
-<script type="text/javascript">
-$(function(){
-  $("#artist-list").hide();
-  $("#filter-widget").tabs({show:function(){
-    $(".artist-item").each(function(idx){
-      var content = $(this).find(".artist-content");
-      $(this).find(".artist-header").click(function(event){
-          event.preventDefault();
-          var link = $(event.target);
-          var url = $(link).attr("href");
-          if(!$(content).is(":visible")){
-            $(content).html("<div>Loading....</div>").show("normal");
-            $.get(url,function(data){
-                        $(content).hide("fast").html(data).show("normal");
-                    }//end ajax callback
-            );//end get
-          }//end if not visible
-          else{$(content).toggle("normal");}
-      });//end click
-    });//end each
-   $("#artist-list").fadeIn("normal");
-   },//end show
-   load:function(event,ui){
-          $("#artist-list").hide();
-          $(".artist-content").hide();
-          $(".artist-content").html("<p/>");
-  },//end load
-   fx:{opacity: "toggle"}
-  });//end tabs
- });//end $
+	<script type="text/javascript"
+	src="${request.application_url}/static/js/jQuery.jPlayer.2.1.0/jquery.jplayer.min.js"></script>
+	<script type="text/javascript" src="${request.application_url}/static/js/ui.js"></script>
 
-$(document).ready(function(){
-  $("#player").jPlayer({
-    swfPath:"${request.application_url}/static/js/jQuery.jPlayer.2.1.0/",
-    solution: "html, flash",
-  });
-});//player init
-
-function play(url){
-  $("#player").jPlayer("setMedia",{mp3:url}).jPlayer("play");
-}
-</script>
   </head>
   <body>
   <div id="navigation">
@@ -64,7 +25,7 @@ function play(url){
       <li><a href="${get_url(request)}search">Search</a></li>
       <li><a href="${request.application_url}/admin">Manage</a></li>
     </ul>
-    <div id="player" class="jp-audio"></div>
+    <div id="player"></div>
     <div id="jp_container_1" class="jp-audio">
 			<div class="jp-type-single">
 				<div class="jp-gui jp-interface">
@@ -112,13 +73,26 @@ function play(url){
   </div>
   <div id="filter-widget" class="list">
     <ul>
-      % for idx in keys:
+      %for idx in keys:
       <li>
 	<a href="${get_url(request)}/${index[idx]}">${idx}</a>
       </li>
       %endfor
     </ul>
-    </div>
+  </div>
+  <script type="text/javascript">
+    $(function(){
+      $.UI.init_filter_widget("#filter-widget");
+      $.UI.init_player_widget("#player",
+        {
+          swfPath:"${request.application_url}/static/js/jQuery.jPlayer.2.1.0/"
+      });
+    });
 
+    
+    function play(url){
+       $.UI.play(url);
+    }
+  </script>
   </body>
 </html>
