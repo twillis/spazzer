@@ -1,0 +1,9 @@
+<ul id="artist-list" class="data-list list">
+  {{each items}}
+<li class="artist-item">
+    <h3><a class="artist-header" href="${$value.detail_url}">${$value.name}</a></h3>
+    <div class="artist-content">
+    </div>
+</li>
+  {{/each}}
+</ul>

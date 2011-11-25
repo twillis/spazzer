@@ -14,6 +14,8 @@
 	<script type="text/javascript"
 	src="${request.application_url}/static/js/jquery-ui-1.8.16.custom.min.js"></script>
 	<script type="text/javascript"
+	src="${request.application_url}/static/js/jquery.tmpl.min.js"></script>
+	<script type="text/javascript"
 	src="${request.application_url}/static/js/jQuery.jPlayer.2.1.0/jquery.jplayer.min.js"></script>
 	<script type="text/javascript" src="${request.application_url}/static/js/ui.js"></script>
 
@@ -79,6 +81,7 @@
       </li>
       %endfor
     </ul>
+    <div id="panel-content"></div>
   </div>
   <script type="text/javascript">
     $(function(){

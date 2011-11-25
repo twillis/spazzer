@@ -1,10 +1,15 @@
+"""
+views for application
+"""
 from webob import Response
 from webob.exc import HTTPNotFound
 from pyramid.chameleon_zpt import render_template
 from urllib import quote as url_quote
 from pyramid.view import view_config
+from pyramid.compat import json
 import models
-from ..collection import model as collections_models
+
+
 def quote(s):
     return url_quote(s.encode("utf-8"))
 
@@ -88,15 +93,16 @@ def view_manage(context, request):
     return {"mounts": mounts, "message": msg}
 
 
-@view_config(context=models.CollectionModel, name="data")
+@view_config(context=models.CollectionModel, name="data", renderer="json")
 def view_artist(context, request):
     request.url_quote = url_quote
     items = context.list_items(request)
-    return Response(render_artists(items, request, context))
+    return render_artists(items, request, context)
 
-@view_config(context=models.CollectionModel, name="detail")
+
+@view_config(context=models.CollectionModel, name="detail", renderer="json")
 def view_albums(context, request):
-    return Response(render_albums(context, request))
+    return render_albums(context, request)
 
 
 def compare_album_years(a, b):
@@ -134,14 +140,36 @@ def render_albums(context,
     else:
         artist = None
 
-    return render_template("templates/detail.pt",
-                           albums=albums,
-                           request=request,
-                           context=context,
-                           artist=artist,
-                           ftt=f_track_title,
-                           fat=f_album_title(show_artist),
-                           artist_context=artist)
+    fat = f_album_title(show_artist)
+    ftt = f_track_title
+
+    result=dict(items=[], artist=artist.name)
+    for album in albums:
+        item = dict(title=fat(album),
+                    name=album.name,
+                    year=album.year,
+                    download_url="%s/download/?artist=%s&;album=%s" % \
+                        (request.application_url,
+                         request.url_quote(artist.name if artist else ""),
+                         request.url_quote(album.name)),
+                    tracks=[]
+                        )
+        for track in album.get_tracks():
+            compilation = track.on_compilation()
+            item["tracks"].append(dict(on_compilation=compilation,
+                                       download_url="%s/download/?track=%s" % \
+                                       (request.application_url,
+                                        str(track.id)),
+                                       track=track.track,
+                                       name=track.title,
+                                       title=ftt(compilation)(track),
+                                       year=track.year,
+                                       artist=track.artist,
+                                       album=track.album))
+        result["items"].append(item)
+
+
+    return result
 
 
 @view_config(context=models.DownloadModel)
@@ -176,9 +204,12 @@ def _serve(filebuf, filename, filesize):
 
 def render_artists(items, request, context):
     request.url_quote = quote
-    return render_template("templates/artist.pt",
-                           items=items,
-                           request=request, context=context)
+    base_url = context.get_url(request)
+
+    item_views = [dict(name=unicode(item),
+                       detail_url="%sdetail?artist=%s" % (base_url, unicode(item))) \
+                  for item in items]
+    return dict(items=item_views)
 
 
 def render_tracks(items, request, show_artist=False):

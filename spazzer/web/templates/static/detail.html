@@ -1,0 +1,29 @@
+<ul class="album-list data-list list">
+    {{each items}}
+    <li class="album-item">
+     <h3>${$value.name}&nbsp;&nbsp;<a class="download-link" href="${$value.download_url}">(download)</a></h3>
+      <table class="album-table">
+	{{each $value.tracks}}
+	<tr class="track-row">
+	  <td class="index-cell">${$value.track}</td>
+	  <td class="title-cell">
+	    <span tal:attributes="class 'relevant-track track-title' if track.on_compilation() and artist_context and track.artist == artist_context.name else 'track-title' " tal:content="ftt(track.on_compilation())(track)">${$value.title}</span>
+	  </td>
+	  <td class="action-cell">
+
+	    <a class="download-link" 
+	       href="${$value.download_url}">
+	      download
+	     </a>
+	     &nbsp;&nbsp;
+	     <a class="play-link" 
+		href="#" onclick="play('${$value.download_url}')">
+	       play
+	     </a>
+	  </td>
+	</tr>
+	{{/each}}
+      </table>
+    </li>
+    {{/each}}
+</ul>

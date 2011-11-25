@@ -1,7 +1,7 @@
 /*ui logic for spazzer depends on jquery*/
 (function($){
 
-  var init_header_click = function(selector, OPTIONS){
+  var init_artist_header_click = function(selector, OPTIONS, render_cb){
       /*handle click events on all child headers of selector present and future*/
       $(selector).find(OPTIONS.header_selector).live("click",
 						     function(event){
@@ -13,7 +13,8 @@
 							     $(content).html("<div>Loading....</div>").show("normal");
 							     $.get(url, 
 								   function(data){
-								       content.hide("fast").html(data).show("normal");
+								       render_cb(content, data);
+								       
 								   }
 								  );
 							 }else{
@@ -22,17 +23,49 @@
 						     });
      
   };
+  var template_cache = {};
+  var render = function(template, data, container){
+      /*handles template caching*/
+      var x = function(){
+	  console.info("rendering data with template " + template);
+	  $(container).hide("fast").html($.tmpl(template, data)).show("normal");
+      };
 
-  $.UI = {init_filter_widget: function(selector, options){
+      if(!template_cache[template]){
+	  $.get(template,function(data){
+		    console.info("fetched template: " + template);
+		    template_cache[template] = $.template(template, data);
+		    x();
+		});
+      }else{
+	  x();
+      }
+  };
+
+  $.UI = {
+
+      init_filter_widget: function(selector, options){
 	      var DEFAULT_OPTIONS = {
 		  item_selector: ".artist-item",
 		  content_selector: ".artist-content",
 		  header_selector: ".artist-header",
-		  list_selector: ".artist-list"
+		  list_selector: ".artist-list",
+		  artist_list_template: "/static/artist-list.html",
+		  detail_template: "/static/detail.html"
+	      };
+	      
+	      var OPTIONS = $.extend(DEFAULT_OPTIONS, options || {});
+	      
+	      var render_artist_content_cb = function(container, data){
+		  render(OPTIONS.detail_template, data, container);
+
 	      };
 
-	      var OPTIONS = $.extend(DEFAULT_OPTIONS, options || {});
-	      init_header_click(selector, OPTIONS);
+	      var render_artist_list = function(data, status, xhr){
+		  render(OPTIONS.artist_list_template, data, $("#panel-content", selector));
+	      };
+
+	      init_artist_header_click(selector, OPTIONS, render_artist_content_cb);
 
 	      $(selector).tabs(
 		  {show: function(){
@@ -44,7 +77,10 @@
 		       $(OPTIONS.content_selector).hide();
 		       $(OPTIONS.content_selector).html("<p/>");
 		   },//end load
-		   fx:{opacity: "toggle"}
+		   ajaxOptions:{
+		       success:render_artist_list
+		   },
+		   fx: {opacity: "toggle"}
 		  });//end tabs
 	  },
 	  init_player_widget: function(selector, options){
@@ -67,7 +103,7 @@
 	      };
 	      var OPTIONS = $.extend(DEFAULT_OPTIONS, options || {});
 	      $(selector).find(OPTIONS.content_selector).hide();
-	      init_header_click(selector, OPTIONS);
+	      init_artist_header_click(selector, OPTIONS);
 	  }
   };   
  })(jQuery);
