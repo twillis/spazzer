@@ -55,7 +55,7 @@
 				</div>
 				<div class="jp-title">
 					<ul>
-						<li>Cro Magnon Man</li>
+						<li></li>
 					</ul>
 				</div>
 				<div class="jp-no-solution" style="display: none; ">
@@ -78,23 +78,47 @@
 	  <p class="info">
 	    Artists whose name contains '${criteria}'
 	  </p>
-	  <span>${artists|n}</span>
+	  <div class="content"></div>
 	</div>
 	<div id="album-results" class="results">
 	  <h3>Albums</h3>
 	  <p class="info">
 	    Albums whose name contains '${criteria}'
 	  </p>
-	  <span>${albums|n}</span>
+	  <div class="content"></div>
 	</div>
 	<div id="track-results" class="results">
 	  <h3>Tracks</h3>
 	  <p class="info">
 	    Tracks whose title contains '${criteria}'
 	  </p>
-	  <span>${tracks|n}</span>
+	  <div class="content"></div>
 	</div>
     </div>
+  % if results:
+  <script type="text/javascript">
+    var results = ${results|n};
+  </script>
+  %else:
+  <script type="text/javascript">
+    var results = {};
+  </script>
+  %endif
+  <script type="text/javascript">
+    $(function(){
+      $.UI.init_filter_widget("#filter-widget");
+      $.UI.init_player_widget("#player",
+        {
+          swfPath:"${request.application_url}/static/js/jQuery.jPlayer.2.1.0/"
+      });
+    });
+
+    
+    function play(url){
+       $.UI.play(url);
+    }
+  </script>
+
 <script type="text/javascript">
 $(function(){
    $.UI.init_search_results("#results");

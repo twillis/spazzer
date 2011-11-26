@@ -3,12 +3,11 @@ views for application
 """
 from webob import Response
 from webob.exc import HTTPNotFound
-from pyramid.chameleon_zpt import render_template
 from urllib import quote as url_quote
 from pyramid.view import view_config
 from pyramid.compat import json
 import models
-
+import mimetypes
 
 def quote(s):
     return url_quote(s.encode("utf-8"))
@@ -32,13 +31,10 @@ keys.append("[ALL]")
 keys.reverse()
 keys.append("[#]")
 
-
-@view_config(context=models.CollectionModel, name="search",
-             renderer="search.mako")
-def search(context, request):
-    request.url_quote = url_quote
+def get_search_results(context, request):
+    request.url_quote = quote
     if "POST" in request.params:
-        criteria = request.POST.get("criteria")
+        criteria = request.params.get("criteria")
         artists = context.search_artists(criteria)
         albums = context.search_albums(criteria)
         tracks = context.search_tracks(criteria)
@@ -47,7 +43,32 @@ def search(context, request):
         albums = []
         tracks = []
         criteria = None
+    return dict(artists=artists, albums=albums, tracks=tracks, criteria=criteria)
 
+@view_config(context=models.CollectionModel, name="search",
+             renderer="search.mako")
+def search(context, request):
+    sr = get_search_results(context, request)
+    artists, albums, tracks, criteria = sr["artists"], sr["albums"], sr["tracks"], sr["criteria"]
+    return dict(results=json.dumps({
+        "artists": render_artists(artists,
+                                  request,
+                                  context),
+        "albums": render_albums(context,
+                                request,
+                                albums or [],
+                                show_artist=True)["items"],
+        "tracks": render_tracks(tracks,
+                                request,
+                                show_artist=True),
+        "criteria": criteria}), criteria=criteria)
+
+
+@view_config(context=models.CollectionModel, name="search_json",
+             renderer="json")
+def search_json(context, request):
+    sr = get_search_results(context, request)
+    artists, albums, tracks, criteria = sr["artists"], sr["albums"], sr["tracks"], sr["criteria"]
     return {
         "artists": render_artists(artists,
                                   request,
@@ -55,12 +76,11 @@ def search(context, request):
         "albums": render_albums(context,
                                 request,
                                 albums or [],
-                                show_artist=True),
+                                show_artist=True)["items"],
         "tracks": render_tracks(tracks,
                                 request,
                                 show_artist=True),
         "criteria": criteria}
-
 
 @view_config(context=models.SiteModel, renderer="browse.mako")
 def home(context, request):
@@ -95,9 +115,9 @@ def view_manage(context, request):
 
 @view_config(context=models.CollectionModel, name="data", renderer="json")
 def view_artist(context, request):
-    request.url_quote = url_quote
+    request.url_quote = quote
     items = context.list_items(request)
-    return render_artists(items, request, context)
+    return dict(items=render_artists(items, request, context))
 
 
 @view_config(context=models.CollectionModel, name="detail", renderer="json")
@@ -120,7 +140,6 @@ def render_albums(context,
                   show_artist=False,
                   artist_context=None):
 
-    request.url_quote = quote
     if albums is None:
         key = request.params.get("artist")
         try:
@@ -143,33 +162,36 @@ def render_albums(context,
     fat = f_album_title(show_artist)
     ftt = f_track_title
 
-    result=dict(items=[], artist=artist.name)
+    result = dict(items=[], artist_context=artist.name if artist else "")
     for album in albums:
         item = dict(title=fat(album),
                     name=album.name,
                     year=album.year,
                     download_url="%s/download/?artist=%s&;album=%s" % \
                         (request.application_url,
-                         request.url_quote(artist.name if artist else ""),
-                         request.url_quote(album.name)),
+                         quote(artist.name if artist else ""),
+                         quote(album.name)),
                     tracks=[]
                         )
         for track in album.get_tracks():
-            compilation = track.on_compilation()
-            item["tracks"].append(dict(on_compilation=compilation,
-                                       download_url="%s/download/?track=%s" % \
-                                       (request.application_url,
-                                        str(track.id)),
-                                       track=track.track,
-                                       name=track.title,
-                                       title=ftt(compilation)(track),
-                                       year=track.year,
-                                       artist=track.artist,
-                                       album=track.album))
+            item["tracks"].append(track_to_track_view(track, request, ftt))
         result["items"].append(item)
 
-
     return result
+
+
+def track_to_track_view(track, request, ftt):
+    compilation = track.on_compilation()
+    return dict(on_compilation=compilation,
+                                      download_url="%s/download/?track=%s" % \
+                                      (request.application_url,
+                                       str(track.id)),
+                                      track=track.track,
+                                      name=track.title,
+                                      title=ftt(compilation)(track),
+                                      year=track.year,
+                                      artist=track.artist,
+                                      album=track.album)
 
 
 @view_config(context=models.DownloadModel)
@@ -181,10 +203,7 @@ def serve(context, request):
     result = context.get_file(request)
     if result:
         buf, length, fname = result
-        try:
-            return _serve(buf, length, fname)
-        finally:
-            buf.close()
+        return _serve(buf, length, fname)
     else:
         return HTTPNotFound()
 
@@ -193,35 +212,32 @@ def _serve(filebuf, filename, filesize):
     """
     request builder for serving files
     """
-    response = Response(content_type="binary/octet-stream")
+    response = Response(conditional_response=True,
+                        content_type=mimetypes.guess_type(filename)[0] \
+                        or "binary/octet-stream")
     response.headers.add("Content-Disposition",
                          "attachment; filename=%s; size=%d" % (
             filename, filesize))
-
-    response.body = filebuf.read()
+    response.app_iter = filebuf
     return response
 
 
 def render_artists(items, request, context):
-    request.url_quote = quote
     base_url = context.get_url(request)
-
     item_views = [dict(name=unicode(item),
-                       detail_url="%sdetail?artist=%s" % (base_url, unicode(item))) \
+                       detail_url="%sdetail?artist=%s" \
+                       % (base_url, quote(item.name))) \
                   for item in items]
-    return dict(items=item_views)
+    return item_views
 
 
 def render_tracks(items, request, show_artist=False):
     """
     render functions assemble pieces from the context
     """
-    request.url_quote = quote
-
-    return render_template("templates/tracks.pt",
-                           tracks=items,
-                           request=request,
-                           ftt=f_track_title(show_artist))
+    ftt = f_track_title
+    return [track_to_track_view(item, request, ftt) \
+                        for item in items]
 
 
 def f_album_title(show_artist=True):
@@ -243,7 +259,12 @@ def f_track_title(show_artist=False):
     _show = show_artist
 
     def _x(track):
-        track_title = track.title or u'(Unknown)'
+        try:
+            track_title = track.title or u'(Unknown)'
+        except:
+            print track
+            raise
+        
         if _show:
             return u"%s by %s" % (track_title,
                                   track.artist or u'(Unknown)')

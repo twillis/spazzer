@@ -1,13 +1,23 @@
 <ul class="album-list data-list list">
-    {{each items}}
+    {{each(album_index, album) items}}
     <li class="album-item">
-     <h3>${$value.name}&nbsp;&nbsp;<a class="download-link" href="${$value.download_url}">(download)</a></h3>
+     <h3>${album.title}&nbsp;&nbsp;<a class="download-link" href="${album.download_url}">(download)</a></h3>
       <table class="album-table">
-	{{each $value.tracks}}
+	{{each album.tracks}}
 	<tr class="track-row">
 	  <td class="index-cell">${$value.track}</td>
 	  <td class="title-cell">
-	    <span tal:attributes="class 'relevant-track track-title' if track.on_compilation() and artist_context and track.artist == artist_context.name else 'track-title' " tal:content="ftt(track.on_compilation())(track)">${$value.title}</span>
+	    {{if $value.on_compilation}}
+	      {{if artist_context !=$value.artist}}
+	        <span class="track-title">
+	       {{else}}
+	        <span class="track-title relevant-track">
+	       {{/if}}
+		${$value.title}</span>
+	    {{else}}
+	    <span class="track-title">${$value.title}</span>
+	    {{/if}}
+
 	  </td>
 	  <td class="action-cell">
 
@@ -17,7 +27,7 @@
 	     </a>
 	     &nbsp;&nbsp;
 	     <a class="play-link" 
-		href="#" onclick="play('${$value.download_url}')">
+		href="${$value.download_url}">
 	       play
 	     </a>
 	  </td>

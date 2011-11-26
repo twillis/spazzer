@@ -1,3 +1,18 @@
+0.6
+---
+
+- replace chameleon templates with mako and jquery-tmpl(temporary
+  until jquery-ui decides what they are going to endorse)
+- replaced player with jPlayer
+- upgraded jquery and jquery-ui dependencies
+- 
+
+
+0.5.1.1
+-------
+
+- port to pyramid
+
 0.5.1
 -----
 

@@ -16,7 +16,7 @@ requires = ['pyramid',
             "PasteScript>=1.7.3"]
 
 setup(name = 'spazzer',
-      version = '0.5.1',
+      version = '0.6',
       description = 'spazzer',
       long_description = README + '\n\n' + CHANGES,
       classifiers = [

@@ -57,7 +57,7 @@
 				</div>
 				<div class="jp-title">
 					<ul>
-						<li>Cro Magnon Man</li>
+						<li></li>
 					</ul>
 				</div>
 				<div class="jp-no-solution" style="display: none; ">
