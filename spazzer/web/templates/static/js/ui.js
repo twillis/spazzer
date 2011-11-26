@@ -104,13 +104,18 @@
 	  init_player_widget: function(selector, options){
 	      var self = this;
 	      var DEFAULT_OPTIONS = {
-		solution:"html, flash"  
+		  solution:"html, flash",
+		  player_template:"/static/player.html"
 	      };
-	      var OPTIONS = $.extend(DEFAULT_OPTIONS, options || {});	      
-	      $(document).ready(function(){$(selector).jPlayer(OPTIONS);});//player init
-	      self.play = function(url){
-		  $(selector).jPlayer("setMedia",{mp3:url}).jPlayer("play");		  
+	      var OPTIONS = $.extend(DEFAULT_OPTIONS, options || {});
+              render(OPTIONS.player_template,{}, selector, function(){
+			 $("#player", selector).jPlayer(OPTIONS);
+			 self.play = function(url){
+			     $("#player",selector).jPlayer("setMedia",{mp3:url}).jPlayer("play");		  
 	      };
+
+		     });
+
 	  },
 	  init_search_results: function(selector, options){
 	      var DEFAULT_OPTIONS = {
@@ -122,6 +127,7 @@
 		  detail_template: "/static/detail.html",
 		  tracks_template: "/static/tracks.html",
 		  play_link:".play-link"
+
 	      };
 	      var OPTIONS = $.extend(DEFAULT_OPTIONS, options || {});
 	      var render_artist_list = function(data){
