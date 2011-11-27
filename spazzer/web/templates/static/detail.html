@@ -1,7 +1,7 @@
 <ul class="album-list data-list list">
     {{each(album_index, album) items}}
     <li class="album-item">
-     <h3>${album.title}&nbsp;&nbsp;<a class="download-link" href="${album.download_url}">(download)</a></h3>
+     <h3>${album.title}&nbsp;&nbsp;<a class="play-all-link" href="">(play all)</a>&nbsp;&nbsp;<a class="download-link" href="${album.download_url}">(download)</a></h3>
       <table class="album-table">
 	{{each album.tracks}}
 	<tr class="track-row">

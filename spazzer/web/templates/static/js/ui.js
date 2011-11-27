@@ -32,6 +32,23 @@
 							     album_title:$(event.target).attr("album-title"),
 							     track_title:$(event.target).attr("track-title")}); 
 					  });
+      /*handles click events on all play-all links*/
+      $(OPTIONS.play_all_link, selector).live("click",
+					     function(event){
+						 event.preventDefault();
+						 $(OPTIONS.play_link, $(event.target)
+						   .parent()
+						   .parent(".album-item")).each(
+						       function(){
+							   var target = this;
+							   var url = $(target).attr("href");
+							   $.UI.play(url, {artist:$(target).attr("artist"),
+									   album_title:$(target).attr("album-title"),
+									   track_title:$(target).attr("track-title")}); 
+							   
+						       }
+						   );
+					     });
      
   };
   var template_cache = {};
@@ -70,7 +87,8 @@
 		  artist_list_template: "/static/artist-list.html",
 		  detail_template: "/static/detail.html",
 		  tracks_template: "/static/tracks.html",
-		  play_link:".play-link"
+		  play_link:".play-link",
+		  play_all_link:".play-all-link"
 	      };
 	      
 	      var OPTIONS = $.extend(DEFAULT_OPTIONS, options || {});
@@ -115,11 +133,24 @@
 						      cssSelectorAncestor: selector + " " + "#jp_container_1"
 						  }, 
 						  [],
-						  {playlistOptions:{enableRemoveControls:true}}
+						  {playlistOptions:{enableRemoveControls:true,
+								   autoPlay:true}}
 						 );
 
               render(OPTIONS.player_template,{}, selector, function(){
 			 $("#player", selector).jPlayer(OPTIONS);
+			 $("#player", selector).bind($.jPlayer.event.ended,function(){
+					       self.PLAYLIST.next();
+					   });
+			 $(".jp-next", selector).click(function(event){
+							  console.debug("next");
+							  self.PLAYLIST.next();
+						      });
+			 $(".jp-previous", selector).click(function(event){
+							      console.debug("previous");
+							      self.PLAYLIST.previous();
+						      });
+
 			 self.play = function(url, info){
 			     self.PLAYLIST.add({artist:info.artist,
 					       title:info.track_title + "(" + info.album_title+ ")",
@@ -140,7 +171,8 @@
 		  artist_list_template: "/static/artist-list.html",
 		  detail_template: "/static/detail.html",
 		  tracks_template: "/static/tracks.html",
-		  play_link:".play-link"
+		  play_link:".play-link",
+		  play_all_link:".play_all_link"
 
 	      };
 	      var OPTIONS = $.extend(DEFAULT_OPTIONS, options || {});
