@@ -28,7 +28,9 @@
 					  function(event){
 					      event.preventDefault();
 					      var url = $(event.target).attr("href");
-					      $.UI.play(url); 
+					      $.UI.play(url, {artist:$(event.target).attr("artist"),
+							     album_title:$(event.target).attr("album-title"),
+							     track_title:$(event.target).attr("track-title")}); 
 					  });
      
   };
@@ -108,11 +110,23 @@
 		  player_template:"/static/player.html"
 	      };
 	      var OPTIONS = $.extend(DEFAULT_OPTIONS, options || {});
+	      self.PLAYLIST = new jPlayerPlaylist({
+						      jPlayer: selector + " " + "#player",
+						      cssSelectorAncestor: selector + " " + "#jp_container_1"
+						  }, 
+						  [],
+						  {playlistOptions:{enableRemoveControls:true}}
+						 );
+
               render(OPTIONS.player_template,{}, selector, function(){
 			 $("#player", selector).jPlayer(OPTIONS);
-			 self.play = function(url){
-			     $("#player",selector).jPlayer("setMedia",{mp3:url}).jPlayer("play");		  
+			 self.play = function(url, info){
+			     self.PLAYLIST.add({artist:info.artist,
+					       title:info.track_title + "(" + info.album_title+ ")",
+					       mp3:url});
+			     $("#player",selector).jPlayer("play");
 	      };
+			 
 
 		     });
 
