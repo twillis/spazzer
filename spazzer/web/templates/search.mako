@@ -67,21 +67,6 @@
     var results = {};
   </script>
   %endif
-  <script type="text/javascript">
-    $(function(){
-      $.UI.init_filter_widget("#filter-widget");
-      $.UI.init_player_widget("#player",
-        {
-          swfPath:"${request.application_url}/static/js/jQuery.jPlayer.2.1.0/"
-      });
-    });
-
-    
-    function play(url){
-       $.UI.play(url);
-    }
-  </script>
-
 <script type="text/javascript">
 $(function(){
    $.UI.init_search_results("#results");

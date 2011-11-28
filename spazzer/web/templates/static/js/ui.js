@@ -32,24 +32,6 @@
 							     album_title:$(event.target).attr("album-title"),
 							     track_title:$(event.target).attr("track-title")}); 
 					  });
-      /*handles click events on all play-all links*/
-      $(OPTIONS.play_all_link, selector).live("click",
-					     function(event){
-						 event.preventDefault();
-						 $(OPTIONS.play_link, $(event.target)
-						   .parent()
-						   .parent(".album-item")).each(
-						       function(){
-							   var target = this;
-							   var url = $(target).attr("href");
-							   $.UI.play(url, {artist:$(target).attr("artist"),
-									   album_title:$(target).attr("album-title"),
-									   track_title:$(target).attr("track-title")}); 
-							   
-						       }
-						   );
-					     });
-     
   };
   var template_cache = {};
   var render = function(template, data, container, cb){
@@ -75,6 +57,45 @@
 	  x();
       }
   };
+
+
+     var init_play_all_album = function(selector, OPTIONS){
+	      /*handles click events on all play-all links*/
+	 $(OPTIONS.play_all_link, selector).live("click",
+						 function(event){
+						     event.preventDefault();
+						     $(OPTIONS.play_link, $(event.target)
+						       .parent()
+						       .parent(".album-item")).each(
+							   function(){
+							       var target = this;
+							       var url = $(target).attr("href");
+							       $.UI.play(url, {artist:$(target).attr("artist"),
+									       album_title:$(target).attr("album-title"),
+									       track_title:$(target).attr("track-title")}); 
+							   }
+						       );
+						 });
+	 
+     };
+
+     var init_play_all_songs = function(selector, OPTIONS){
+	      /*handles click events on all play-all links*/
+	      $(OPTIONS.play_all_link, selector).live("click",
+						      function(event){
+							  event.preventDefault();
+							  $(OPTIONS.play_link, selector).each(
+								function(){
+								    var target = this;
+								    var url = $(target).attr("href");
+								    $.UI.play(url, {artist:$(target).attr("artist"),
+										    album_title:$(target).attr("album-title"),
+										    track_title:$(target).attr("track-title")}); 
+								}
+							    );
+						      });
+	 
+     };
 
   $.UI = {
 
@@ -107,6 +128,7 @@
 	      };
 
 	      init_artist_view(selector, OPTIONS, render_artist_content_cb);
+	      init_play_all_album(selector, OPTIONS);
 
 	      $(selector).tabs(
 		  {show: function(){
@@ -172,7 +194,7 @@
 		  detail_template: "/static/detail.html",
 		  tracks_template: "/static/tracks.html",
 		  play_link:".play-link",
-		  play_all_link:".play_all_link"
+		  play_all_link:".play-all-link"
 
 	      };
 	      var OPTIONS = $.extend(DEFAULT_OPTIONS, options || {});
@@ -199,6 +221,9 @@
 
 	      $(selector).find(OPTIONS.content_selector).hide();
 	      init_artist_view(selector, OPTIONS, render_artist_content_cb);
+	      init_play_all_album($("#artist-results",selector), OPTIONS);
+	      init_play_all_album($("#album-results",selector), OPTIONS);
+	      init_play_all_songs($("#track-results",selector), OPTIONS);
 
 	      if(window.results){
 		  render_artist_list({items:window.results.artists});
