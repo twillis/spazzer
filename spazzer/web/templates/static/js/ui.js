@@ -172,17 +172,32 @@
 							      console.debug("previous");
 							      self.PLAYLIST.previous();
 						      });
-
+			 $(".jp-playlist-toggle", selector).html("hide").toggle(
+						    function(){
+							$(this).html("show");
+							$(".jp-playlist", selector).toggle("slow");
+						    },
+						    function(){
+							$(this).html("hide");
+							$(".jp-playlist", selector).toggle("slow");
+						    }
+						);
 			 self.play = function(url, info){
 			     self.PLAYLIST.add({artist:info.artist,
 					       title:info.track_title + "(" + info.album_title+ ")",
 					       mp3:url});
 			     $("#player",selector).jPlayer("play");
-	      };
-			 
-
+			 };
 		     });
 
+	      $(".jp-playlist-clear", selector).live("click", 
+						      function(event){
+							  event.preventDefault();
+							  self.PLAYLIST.setPlaylist([]);
+						      });
+	      $(".jp-playlist-toggle", selector).live("click", function(event){
+						event.preventDefault();
+					    });	      
 	  },
 	  init_search_results: function(selector, options){
 	      var DEFAULT_OPTIONS = {

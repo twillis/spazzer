@@ -55,11 +55,6 @@
           swfPath:"${request.application_url}/static/js/jQuery.jPlayer.2.1.0/"
       });
     });
-
-    
-    function play(url){
-       $.UI.play(url);
-    }
   </script>
   </body>
 </html>

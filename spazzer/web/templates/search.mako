@@ -76,11 +76,6 @@ $(function(){
       });
 
 });
-
-function play(url){
-  $.UI.play(url);
-}
-
 </script>
 </body>
 </html>
