@@ -8,6 +8,8 @@ from pyramid.view import view_config
 from pyramid.compat import json
 import models
 import mimetypes
+import logging
+log = logging.getLogger(__name__)
 
 def quote(s):
     return url_quote(s.encode("utf-8"))
@@ -200,26 +202,45 @@ def serve(context, request):
     get's the file data from the context and dispatches off
     to the request builder
     """
-    result = context.get_file(request)
-    if result:
-        buf, length, fname = result
-        return _serve(buf, length, fname)
+    if "track" in request.params:
+        chunk_response = True
     else:
-        return HTTPNotFound()
+        chunk_response = False
+
+    def _get_stream():
+        result = context.get_file(request)
+        if result:
+            buf, fname, length = result
+            return buf, length, fname
+        else:
+            return []
+
+    return _serve(_get_stream, chunk_response)
 
 
-def _serve(filebuf, filename, filesize):
+def _serve(get_stream, chunk_response=False):
     """
     request builder for serving files
     """
-    response = Response(conditional_response=True,
-                        content_type=mimetypes.guess_type(filename)[0] \
-                        or "binary/octet-stream")
-    response.headers.add("Content-Disposition",
-                         "attachment; filename=%s; size=%d" % (
-            filename, filesize))
-    response.app_iter = filebuf
-    return response
+    results = get_stream()
+    if results:
+        filebuf, filesize, filename = results
+        response = Response(conditional_response=True,
+                            content_length=filesize,
+                            content_type=mimetypes.guess_type(filename)[0] \
+                            or "binary/octet-stream")
+        response.headers.add("Content-Disposition",
+                             "attachment; filename=%s; size=%d" % (
+                                 filename, filesize))
+
+        def _get_stream():
+            return get_stream()[0]
+        
+        response.app_iter = StreamIterable(_get_stream) if chunk_response else filebuf
+        return response
+    else:
+        return HTTPNotFound()
+
 
 
 def render_artists(items, request, context):
@@ -264,10 +285,60 @@ def f_track_title(show_artist=False):
         except:
             print track
             raise
-        
+
         if _show:
             return u"%s by %s" % (track_title,
                                   track.artist or u'(Unknown)')
         else:
             return track_title
     return _x
+
+
+# from http://docs.webob.org/en/latest/file-example.html
+# modified since we aren't exposing the file_name
+
+class StreamIterable(object):
+    def __init__(self, stream, start=None, stop=None):
+        self._stream = stream
+        self._start = start
+        self._stop = stop
+
+    def __iter__(self):
+        return StreamIterator(self._stream(), self._start, self._stop)
+
+    def app_iter_range(self, start, stop):
+        return self.__class__(self._stream(), start, stop)
+
+
+class StreamIterator(object):
+    chunk_size = 1096 * 1000
+
+    def __init__(self, stream, start, stop):
+        self._stream = stream
+        self._start = start
+        self._stop = stop
+        if self._start:
+            self._stream.seek(start)
+        # else:
+        #     self._stream.seek(0)
+        if self._stop is not None:
+            self._length = self._stop - self._start
+        else:
+            self._length = None
+
+    def __iter__(self):
+        return self
+
+    def next(self):
+        if self._length is not None and self._length <= 0:
+            raise StopIteration()
+        chunk = self._stream.read(self.chunk_size)
+        if not chunk:
+            raise StopIteration()
+        if self._length is not None:
+            self._length -= len(chunk)
+            if self._length < 0:
+                chunk = chunk[:self._length]
+        return chunk
+
+    __next__ = next  # py3
