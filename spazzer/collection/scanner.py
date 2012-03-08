@@ -108,7 +108,7 @@ def scan_dir(d, last_update=datetime(1900, 1, 1), check_extra=None):
     """
     d = os.path.abspath(d)
     for r, dirs, files in os.walk(d):
-
+        print r
         for x in (os.path.join(r, f) \
                       for f in files \
                       if os.path.splitext(f)[1].lower() in VALID_XTNS):
@@ -199,6 +199,7 @@ class Scanner(object):
 
     def _do_scan(self):
         for dir in self.dirs:
+            dir = dir.encode("utf-8")
             for f in scan_dir(dir, self.last_update, self._check):
                 self.callback(f)
 
