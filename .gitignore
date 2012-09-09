@@ -1,0 +1,7 @@
+*.*~
+*.egg-info
+*.pyc
+.coverage
+*.db
+*.db-journal
+tmpdb
