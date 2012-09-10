@@ -1,7 +1,6 @@
 from ..collection.model import FileRecord, MountPoint,\
      ArtistView, AlbumView, TrackView, or_
-from ..collection.scanner import Scanner, process_file, \
-     is_contained, prune
+from ..collection.scanner import Scanner, is_contained
 from ..collection.meta import _s
 import transaction
 import uuid
@@ -151,24 +150,17 @@ class AdminModel(BaseModel):
             FileRecord.modify_date.desc()).first()
         if last_modified:
             last_modified = last_modified[0]
-        errors = []
 
         def abort():
             pass
 
-        def _proc(info):
-            process_file(info, errors, transaction.commit, abort)
-
-        def _prune(*rec):
-            prune(*rec, committer=transaction.commit, rollbacker=abort)
-
-        scanner = Scanner([m.mount for m in \
-                               self.get_mounts()],
-                          callbackNew=_proc,
-                          last_update=last_modified, callbackOld=_prune)
+        scanner = Scanner([m.mount for m in
+                           self.get_mounts()],
+                          last_update=last_modified,
+                          committer=transaction.commit,
+                          rollbacker=abort)
         scanner()
-        return len(errors) == 0, "\n".join(("%s:\n\t%s" % (info, ex)
-                                          for info, ex in errors))
+        return len(scanner.errors), "\n".join(["%s\n\n%s" % (info, ex) for  info, ex in scanner.errors])
 
     def remove_mount(self, m_id):
         m = MountPoint.query().get(uuid.UUID(m_id))
@@ -180,7 +172,7 @@ class AdminModel(BaseModel):
         add mount point for future scanning
         """
         if os.path.exists(path):  # exists
-            if not is_contained(path):  # not already registered
+            if not is_contained(path, MountPoint.query().all()):  # not already registered
                 if os.access(path, os.R_OK):  # can read
                     _s().add(MountPoint(path))
                     transaction.commit()
