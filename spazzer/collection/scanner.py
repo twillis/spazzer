@@ -112,11 +112,12 @@ class Scanner(object):
         self.committer = committer
         self.rollbacker = rollbacker
         self.errors = []
+
     def _do_prune(self):
         items_to_remove = []
 
         for f, r in self.RECORD_CACHE.items():
-            if self.is_contained(f) or not os.path.exists(f):
+            if not self.is_contained(f) or not os.path.exists(f):
                 items_to_remove.append(r)
 
         if len(items_to_remove) > 0:
@@ -151,7 +152,6 @@ class Scanner(object):
                 if os.path.splitext(x)[1].lower() in VALID_XTNS:
                     stats = os.stat(x)
                     file_update = datetime.fromtimestamp(stats[stat.ST_MTIME])
-                    x = x.encode("utf-8").decode("utf-8")
                     rec = self.get_file_from_db(x)
                     if not rec or (rec and file_update > rec.modify_date)\
                        and (not last_update or (last_update and \
@@ -163,11 +163,13 @@ class Scanner(object):
         """
         consult the cache if it exists, otherwise go straight to the db
         """
+        fname = unicode(file_name, "utf-8") if not isinstance(file_name, unicode) else file_name
         if self.RECORD_CACHE:
-            return self.RECORD_CACHE.get(file_name)
+            return self.RECORD_CACHE.get(file_name) or FileRecord.query().filter(
+                FileRecord.file_name == fname).first()
         else:
             return FileRecord.query().filter(
-                FileRecord.file_name == file_name).first()
+                FileRecord.file_name == fname).first()
 
     def get_mounts(self):
         """
@@ -197,6 +199,7 @@ class Scanner(object):
                 ex = info.pop("exception")
             else:
                 file_name = info.pop("file")
+                file_name = unicode(file_name, "utf-8") if not isinstance(file_name, unicode) else file_name
                 create_date = info.pop("create_date")
                 modify_date = info.pop("modify_date")
 
