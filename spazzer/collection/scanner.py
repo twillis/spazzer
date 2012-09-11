@@ -12,6 +12,7 @@ import sys
 from .model import FileRecord, MountPoint
 from sqlalchemy import engine_from_config
 from sqlalchemy.orm import sessionmaker, scoped_session
+from sqlalchemy import exc
 import manage
 import logging
 log = logging.getLogger(__name__)
@@ -107,6 +108,7 @@ class Scanner(object):
                  rollbacker=session_rollbacker):
         self.dirs = dirs
         self.last_update = last_update
+        log.info("Generating record cache")
         self.RECORD_CACHE =  dict(FileRecord.query(FileRecord.file_name, FileRecord).all())
         self.MOUNT_CACHE = self.get_mounts()
         self.committer = committer
@@ -114,6 +116,7 @@ class Scanner(object):
         self.errors = []
 
     def _do_prune(self):
+        log.info("Pruning for %s" % ",".join(self.dirs))
         items_to_remove = []
 
         for f, r in self.RECORD_CACHE.items():
@@ -123,7 +126,11 @@ class Scanner(object):
         if len(items_to_remove) > 0:
             self.prune(items_to_remove)
 
+        for item in items_to_remove:
+            del self.RECORD_CACHE[item.file_name]
+
     def _do_scan(self):
+        log.info("Scanning %s for changes" % ",".join(self.dirs))
         for dir in self.dirs:
             for f in self.scan_dir(dir, self.last_update):
                 self.process_file(f)
@@ -163,13 +170,16 @@ class Scanner(object):
         """
         consult the cache if it exists, otherwise go straight to the db
         """
-        fname = unicode(file_name, "utf-8") if not isinstance(file_name, unicode) else file_name
-        if self.RECORD_CACHE:
-            return self.RECORD_CACHE.get(file_name) or FileRecord.query().filter(
-                FileRecord.file_name == fname).first()
+        fname = unicode(file_name, "utf-8") \
+                if not isinstance(file_name, unicode) \
+                else file_name
+        if self.RECORD_CACHE and fname in self.RECORD_CACHE:
+            result = self.RECORD_CACHE[fname]
         else:
-            return FileRecord.query().filter(
+            result = FileRecord.query().filter(
                 FileRecord.file_name == fname).first()
+
+        return result
 
     def get_mounts(self):
         """
@@ -185,7 +195,9 @@ class Scanner(object):
         try:
             session = manage.meta._s()
             for r in reclist:
+                log.info("removing %s" % r.file_name)
                 session.delete(r)
+
             self.committer()
             log.debug("done...")
         except Exception as ex:
@@ -242,7 +254,7 @@ class Scanner(object):
                 try:
                     if rec:
                         manage.meta._s().add(rec)
-
+                        log.info("saving new info for file %s" % rec.file_name)
                 except Exception as dbex:
                     self.rollbacker()
 
@@ -313,6 +325,7 @@ class ScannerCommand(Command):
             raise BadCommand(self.parser.get_usage())
 
     def command(self):
+        logging.basicConfig(stream=sys.stdout, level=logging.DEBUG)
         self.parse_last_modified()
         paste_config = self.get_config(self.parse_section())
         engine = engine_from_config(paste_config)
