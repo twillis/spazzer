@@ -109,7 +109,7 @@ class Scanner(object):
         self.dirs = dirs
         self.last_update = last_update
         log.info("Generating record cache")
-        self.RECORD_CACHE =  dict(FileRecord.query(FileRecord.file_name, FileRecord).all())
+
         self.MOUNT_CACHE = self.get_mounts()
         self.committer = committer
         self.rollbacker = rollbacker
@@ -129,6 +129,8 @@ class Scanner(object):
         for item in items_to_remove:
             del self.RECORD_CACHE[item.file_name]
 
+        self.committer()
+
     def _do_scan(self):
         log.info("Scanning %s for changes" % ",".join(self.dirs))
         for dir in self.dirs:
@@ -137,7 +139,9 @@ class Scanner(object):
             self.committer()
 
     def __call__(self):
+        self.RECORD_CACHE =  dict(FileRecord.query(FileRecord.file_name, FileRecord).all())
         self._do_prune()
+        self.RECORD_CACHE =  dict(FileRecord.query(FileRecord.file_name, FileRecord).all())
         self._do_scan()
 
     def is_contained(self, path):
