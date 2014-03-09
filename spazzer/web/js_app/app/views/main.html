@@ -1,0 +1,25 @@
+<!-- artist index -->
+<div class="row">
+  <div class="small-1 columns">
+<ul>
+    <li ng-repeat="idx in ['all','#','a','b','c','d','e','f','g','h','i','j','k','l','m','n','o','p','q','r','t','u','v','w','x','y','z']">
+      <a ng-click="showSet(idx)">{{idx}}</a>
+    </li>
+  </ul>    
+  </div>
+  <div class="small-3 columns results">
+<ul>
+      <li ng-repeat="item in items">
+	<a ng-click="selectArtist(item)">{{item.name}}</a>
+      </li>
+  </ul>    
+  </div>
+  <div class="small-8 columns" ng-show="selectedArtistAlbums">
+    <ul>
+        <li ng-repeat="item in selectedArtistAlbums">
+	  {{item.title}}
+	</li>
+    </ul>
+  </div>
+</div>
+
