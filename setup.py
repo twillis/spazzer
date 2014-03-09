@@ -13,7 +13,9 @@ requires = ['pyramid',
             'zope.sqlalchemy',
             "Paste>=1.7.2",
             "PasteDeploy>=1.3.3",
-            "PasteScript>=1.7.3"]
+            "PasteScript>=1.7.3"
+            "pyramid_mako"]
+
 
 setup(name = 'spazzer',
       version = '0.6',

@@ -46,7 +46,7 @@ def get_search_results(context, request):
     return dict(artists=artists, albums=albums, tracks=tracks, criteria=criteria)
 
 @view_config(context=models.CollectionModel, name="search",
-             renderer="search.mako")
+             renderer="search.mako", route_name="api")
 def search(context, request):
     sr = get_search_results(context, request)
     artists, albums, tracks, criteria = sr["artists"], sr["albums"], sr["tracks"], sr["criteria"]
@@ -65,7 +65,7 @@ def search(context, request):
 
 
 @view_config(context=models.CollectionModel, name="search_json",
-             renderer="json")
+             renderer="json", route_name="api")
 def search_json(context, request):
     sr = get_search_results(context, request)
     artists, albums, tracks, criteria = sr["artists"], sr["albums"], sr["tracks"], sr["criteria"]
@@ -82,12 +82,12 @@ def search_json(context, request):
                                 show_artist=True),
         "criteria": criteria}
 
-@view_config(context=models.SiteModel, renderer="browse.mako")
+@view_config(context=models.SiteModel, renderer="browse.mako", route_name="api")
 def home(context, request):
     return browse(context["collection"], request)
 
 
-@view_config(context=models.CollectionModel, renderer="browse.mako")
+@view_config(context=models.CollectionModel, renderer="browse.mako", route_name="api")
 def browse(context, request):
     return {"items": "",
             "title": "Browse",
@@ -96,7 +96,7 @@ def browse(context, request):
             "get_url": context.get_url}
 
 
-@view_config(context=models.AdminModel, renderer="manage.mako")
+@view_config(context=models.AdminModel, renderer="manage.mako", route_name="api")
 def view_manage(context, request):
     if "POST" in request.params:
         if "DELETE" in request.params:
@@ -113,14 +113,14 @@ def view_manage(context, request):
     return {"mounts": mounts, "message": msg}
 
 
-@view_config(context=models.CollectionModel, name="data", renderer="json")
+@view_config(context=models.CollectionModel, name="data", renderer="json", route_name="api")
 def view_artist(context, request):
     request.url_quote = quote
     items = context.list_items(request)
     return dict(items=render_artists(items, request, context))
 
 
-@view_config(context=models.CollectionModel, name="detail", renderer="json")
+@view_config(context=models.CollectionModel, name="detail", renderer="json", route_name="api")
 def view_albums(context, request):
     return render_albums(context, request)
 
@@ -194,7 +194,7 @@ def track_to_track_view(track, request, ftt):
                                       album=track.album)
 
 
-@view_config(context=models.DownloadModel)
+@view_config(context=models.DownloadModel, route_name="api")
 def serve(context, request):
     """
     get's the file data from the context and dispatches off

@@ -26,7 +26,7 @@ class BaseModel(object):
         """
         given the request, returns url to this model instance
         """
-        return model_url(self, request)
+        return request.resource_url(self, route_name="api")
 
 
 class CollectionModel(BaseModel):
