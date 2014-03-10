@@ -1,5 +1,11 @@
 <ul>
   <li ng-repeat="item in selectedArtistAlbums">
-    {{item.title}}
+    <h3>{{item.title}} <a href="{{item.download_url}}">(download)</a> </h3>
+ 
+    <ul>
+        <li ng-repeat="track in item.tracks">
+	  <a href="{{track.download_url}}">{{track.track}}. {{track.title}}</a>
+	</li>
+    </ul>
   </li>
 </ul>

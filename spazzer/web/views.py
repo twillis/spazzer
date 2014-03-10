@@ -167,7 +167,7 @@ def render_albums(context,
         item = dict(title=fat(album),
                     name=album.name,
                     year=album.year,
-                    download_url="%s/download/?artist=%s&;album=%s" % \
+                    download_url="%s/api/download/?artist=%s&;album=%s" % \
                         (request.application_url,
                          quote(artist.name if artist else ""),
                          quote(album.name)),
@@ -183,7 +183,7 @@ def render_albums(context,
 def track_to_track_view(track, request, ftt):
     compilation = track.on_compilation()
     return dict(on_compilation=compilation,
-                                      download_url="%s/download/?track=%s" % \
+                                      download_url="%s/api/download/?track=%s" % \
                                       (request.application_url,
                                        str(track.id)),
                                       track=track.track,
