@@ -4,7 +4,7 @@
   <div class="small-12 columns">
     <ul class="list-index">
       <li ng-repeat="idx in ['all','#','a','b','c','d','e','f','g','h','i','j','k','l','m','n','o','p','q','r','s','t','u','v','w','x','y','z']">
-	<a ng-click="showSet(idx)">{{idx}}</a>
+	<a ng-class="{selected: idx==start}"ng-click="showSet(idx)">{{idx}}</a>
       </li>
     </ul>    
   </div>
