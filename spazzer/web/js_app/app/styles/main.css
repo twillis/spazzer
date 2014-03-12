@@ -8,3 +8,6 @@
 
 .detail-item * {
   font-size: 95%; }
+
+.selected {
+  background-color: #eee; }

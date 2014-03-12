@@ -1,7 +1,7 @@
 <div class="row">
   <div class="small-6 columns">
     <ul class="item-list">
-      <li ng-repeat="item in items">
+      <li ng-class="{selected: item == selectedArtist}" ng-repeat="item in items">
 	<a ng-click="selectArtist(item)">{{item.name}}</a>
       </li>
     </ul>    
