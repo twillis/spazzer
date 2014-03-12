@@ -1,0 +1,10 @@
+.list-index > li {
+  display: inline-block;
+  padding-right: .5em; }
+
+.item-list {
+  height: 35em;
+  overflow-y: scroll; }
+
+.detail-item * {
+  font-size: 95%; }

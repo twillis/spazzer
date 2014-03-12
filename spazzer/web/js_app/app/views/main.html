@@ -1,12 +1,15 @@
 <!-- artist index -->
 <div class="row">
-  <div class="small-1 columns">
-    <ul>
+  <!-- could be a search/browse toggle maybe? -->
+  <div class="small-12 columns">
+    <ul class="list-index">
       <li ng-repeat="idx in ['all','#','a','b','c','d','e','f','g','h','i','j','k','l','m','n','o','p','q','r','s','t','u','v','w','x','y','z']">
 	<a ng-click="showSet(idx)">{{idx}}</a>
       </li>
     </ul>    
   </div>
-  <div ui-view class="small-11 columns"></div>
-</div>
 
+</div>
+<div class="row">
+  <div ui-view class="small-12 columns"></div>
+</div>

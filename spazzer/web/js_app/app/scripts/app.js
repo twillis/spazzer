@@ -1,11 +1,10 @@
 'use strict';
-
 angular.module('spazzerApp', [
     'ngCookies',
     'ngResource',
     'ngSanitize',
     'ui.router'
-]).config(['$stateProvider', '$urlRouterProvider', function ($stateProvider, $urlRouterProvider) {
+  ]).config(['$stateProvider', '$urlRouterProvider', function ($stateProvider, $urlRouterProvider) {
     $urlRouterProvider.otherwise('/');
     $stateProvider.state('main',
                          {url: '/',
@@ -19,4 +18,4 @@ angular.module('spazzerApp', [
                         {url:'/:artist',
                         templateUrl: 'views/artist.html',
                         controller: 'ArtistCtrl'});
-}]);
+  }]);
