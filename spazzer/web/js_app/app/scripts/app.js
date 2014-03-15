@@ -3,7 +3,8 @@ angular.module('spazzerApp', [
     'ngCookies',
     'ngResource',
     'ngSanitize',
-    'ui.router'
+    'ui.router',
+    'ui.sortable'
   ]).config(['$stateProvider', '$urlRouterProvider', function ($stateProvider, $urlRouterProvider) {
     $urlRouterProvider.otherwise('/list');
     $stateProvider.state('collection',

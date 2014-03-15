@@ -14,9 +14,9 @@
 	</li>
     </ul>
     <h2>Playlist</h2>
-    <ul>
-        <li ng-repeat="item in playList.playList" ng-click="player.playItem(item)">
-	  {{item.artist}}: {{item.name}} 
+    <ul ng-model="playList.playList" ui-sortable>
+        <li ng-repeat="item in playList.playList">
+          <a  ng-click="player.playItem(item)">{{item.artist}}: {{item.name}}</a>
           <a ng-click="playList.removeItem(item)">x</a>
 	</li>
     </ul>

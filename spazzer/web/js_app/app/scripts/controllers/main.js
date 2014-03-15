@@ -70,10 +70,9 @@ angular.module('spazzerApp')
                       }else{
                           this.playItem(new_item);
                       }
-                      
+
                   };
 
-                  
                   var service = this;
 
                   $rootScope.$on('$itemRemoved',
@@ -146,7 +145,6 @@ angular.module('spazzerApp')
                  function($scope, $state, MusicPlayer, MusicPlayList){
                      $scope.playList = MusicPlayList;
                      $scope.player = MusicPlayer;
-                     
                  }])
     .controller('MainCtrl', 
                 ['$scope',
