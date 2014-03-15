@@ -1,0 +1,24 @@
+<div class="row">
+  <div class="small-12 columns">
+    <h1>Now Playing:</h1>
+    {{playList.current.artist}}: {{playList.current.name}} 
+    <div><progress max="100" value="{{player.currentPosition}}"></progress></div>
+    <ul>
+        <li ng-click="player.playPrevious()">previous</li>
+        <li ng-click="player.playToggle()">
+          <span ng-show="player.playing">playing</span>
+          <span ng-hide="player.playing">stopped</span>
+	</li>
+        <li ng-click="player.playNext()">
+	  next
+	</li>
+    </ul>
+    <h2>Playlist</h2>
+    <ul>
+        <li ng-repeat="item in playList.playList" ng-click="player.playItem(item)">
+	  {{item.artist}}: {{item.name}} 
+          <a ng-click="playList.removeItem(item)">x</a>
+	</li>
+    </ul>
+  </div>
+</div>

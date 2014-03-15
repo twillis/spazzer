@@ -1,10 +1,10 @@
 <ul class="item-list">
   <li ng-repeat="item in selectedArtistAlbums" class="detail-item panel">
-    <h3>{{item.title}} <a href="{{item.download_url}}">(download)</a> </h3>
+    <h3>{{item.title}} <a ng-click="playList.addAll(item.tracks)">(add all)</a> </h3>
  
     <ul>
         <li ng-repeat="track in item.tracks">
-	  <a href="{{track.download_url}}">{{track.track}}. {{track.title}}</a>
+	  <a ng-click="playList.addItem(track)">{{track.track}}. {{track.title}}</a>
 	</li>
     </ul>
   </li>
