@@ -1,7 +1,10 @@
 <div class="row">
   <div class="small-12 columns">
     <h1>Now Playing:</h1>
-    {{playList.current.artist}}: {{playList.current.name}} 
+    <span ng-show="playList.current">
+      {{playList.current.artist}}: {{playList.current.name}}       
+    </span>
+
     <div><progress max="100" value="{{player.currentPosition}}"></progress></div>
     <ul>
         <li ng-click="player.playPrevious()">previous</li>
@@ -14,8 +17,10 @@
 	</li>
     </ul>
     <h2>Playlist</h2>
+    
+    <a ng-show="playList.playList.length > 0" ng-click="playList.clearPlayList()">clear</a>
     <ul ng-model="playList.playList" ui-sortable>
-        <li ng-repeat="item in playList.playList">
+        <li ng-class="{selected: item == playList.current}" ng-repeat="item in playList.playList">
           <a  ng-click="player.playItem(item)">{{item.artist}}: {{item.name}}</a>
           <a ng-click="playList.removeItem(item)">x</a>
 	</li>

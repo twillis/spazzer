@@ -118,9 +118,11 @@ angular.module('spazzerApp')
                  this.addItem = function(item){
                      this.playList.push(item);
                  };
+
                  this.addAll = function(items){
                      this.playList = _.union(this.playList, items);
                  };
+
                  this.removeItem = function(idx){
                      this.playList = _.reject(this.playList, _is(idx));
                      if(_is(idx)(this.current)){
@@ -128,6 +130,7 @@ angular.module('spazzerApp')
                      }
                      $rootScope.$broadcast('$itemRemoved', idx);
                  };
+
                  this.setCurrent = function(idx){
                      this.current = this.find_item(idx);
                      if(!this.current){
@@ -135,6 +138,13 @@ angular.module('spazzerApp')
                          this.current = idx;
                      }
                  };
+
+                  this.clearPlayList = function(){
+                      this.playList = [];
+                      this.current = null;
+                     $rootScope.$broadcast('$itemRemoved', null);
+                  };
+                  
                  return this;
              }])
     .controller('PlayerCtrl',
