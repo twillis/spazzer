@@ -1,1 +1,19 @@
-search results here {{criteria}}
+<h1>Search Results "{{items.criteria}}"</h1>
+
+<h2>Artists</h2>
+<ul>
+    <li ng-repeat="item in items.artists">{{item.name}}</li>
+    <li ng-hide="items.artists">No Results</li>
+</ul>
+
+<h2>Albums</h2>
+<ul>
+    <li ng-repeat="item in items.albums">{{item.name}}</li>
+    <li ng-hide="items.albums">No Results</li>
+</ul>
+
+<h2>Tracks</h2>
+<ul>
+    <li ng-repeat="item in items.tracks">{{item.name}}</li>
+    <li ng-hide="items.albums">No Results</li>
+</ul>

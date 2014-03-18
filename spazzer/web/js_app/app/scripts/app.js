@@ -27,4 +27,10 @@ angular.module('spazzerApp', [
                         {url:'/player',
                         templateUrl: 'views/player.html',
                         controller: 'PlayerCtrl'});
+   $stateProvider.state('admin',
+                        {url:'/admin',
+                        templateUrl: 'views/admin.html',
+                        controller: 'AdminCtrl'});
+
+
   }]);

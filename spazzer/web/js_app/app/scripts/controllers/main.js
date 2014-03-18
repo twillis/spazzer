@@ -5,6 +5,8 @@ angular.module('spazzerApp')
              ['$http', 
               function($http){
                   /*singleton style service, the "api" is that each of these methods will return promises*/
+                  var CONTENT_TYPE={'Content-Type': 'application/x-www-form-urlencoded;charset=utf-8'};
+
                   this.getCollection = function(start){
                       var params = {};
 
@@ -23,6 +25,31 @@ angular.module('spazzerApp')
 
                   this.searchCollection = function(criteria){
                       return $http.get('/api/collection/search_json', {params: {criteria: criteria}});
+                  };
+
+                  this.getMounts = function(){
+                      return $http.get('/api/admin/mounts');
+                  };
+
+                  this.scanMounts = function(){
+                      
+                      return $http({url:'/api/admin/scan',
+                                    headers: CONTENT_TYPE,
+                                    method: "POST"});
+                  };
+
+                  this.addMount = function(mount){
+                      return $http({url: '/api/admin/add_mount',
+                                         headers: CONTENT_TYPE,
+                                         method: "POST",
+                                         data: $.param({mount: mount})});
+                  };
+
+                  this.removeMount = function(mount){
+                      return $http({url:'/api/admin/remove_mount', 
+                                    headers:CONTENT_TYPE, 
+                                    method:"POST",
+                                    data: $.param({mount: mount})});
                   };
 
                   return this;
@@ -105,52 +132,52 @@ angular.module('spazzerApp')
     .factory('MusicPlayList',
              ['$rootScope',
               function($rootScope){
-                 this.playList = [];
-                 this.current = null;
+                  this.playList = [];
+                  this.current = null;
 
-                 var _is = function(idx){
-                     return function(item){
-                         return item && idx && item.$$hashKey === idx.$$hashKey;
-                     };
-                 };
+                  var _is = function(idx){
+                      return function(item){
+                          return item && idx && item.$$hashKey === idx.$$hashKey;
+                      };
+                  };
 
-                 this.find_item = function(idx){
-                     return _.find(this.playList, _is(idx));
-                 };
+                  this.find_item = function(idx){
+                      return _.find(this.playList, _is(idx));
+                  };
 
 
-                 this.addItem = function(item){
-                     this.playList.push(item);
-                 };
+                  this.addItem = function(item){
+                      this.playList.push(item);
+                  };
 
-                 this.addAll = function(items){
-                     this.playList = _.union(this.playList, items);
-                 };
+                  this.addAll = function(items){
+                      this.playList = _.union(this.playList, items);
+                  };
 
-                 this.removeItem = function(idx){
-                     this.playList = _.reject(this.playList, _is(idx));
-                     if(_is(idx)(this.current)){
-                         this.current = null;
-                     }
-                     $rootScope.$broadcast('$itemRemoved', idx);
-                 };
+                  this.removeItem = function(idx){
+                      this.playList = _.reject(this.playList, _is(idx));
+                      if(_is(idx)(this.current)){
+                          this.current = null;
+                      }
+                      $rootScope.$broadcast('$itemRemoved', idx);
+                  };
 
-                 this.setCurrent = function(idx){
-                     this.current = this.find_item(idx);
-                     if(!this.current){
-                         this.addItem(idx);
-                         this.current = idx;
-                     }
-                 };
+                  this.setCurrent = function(idx){
+                      this.current = this.find_item(idx);
+                      if(!this.current){
+                          this.addItem(idx);
+                          this.current = idx;
+                      }
+                  };
 
                   this.clearPlayList = function(){
                       this.playList = [];
                       this.current = null;
-                     $rootScope.$broadcast('$itemRemoved', null);
+                      $rootScope.$broadcast('$itemRemoved', null);
                   };
                   
-                 return this;
-             }])
+                  return this;
+              }])
     .controller('PlayerCtrl',
                 ['$scope', 
                  '$state', 
@@ -227,11 +254,40 @@ angular.module('spazzerApp')
                          $scope.selectedArtistAlbums = results.data.items;
                      });
                  }])
-.controller('SearchCtrl',
-            ['$scope', 
-             'MusicService', 
-             '$state',
-            function($scope, MusicService, $state){
-                $scope.criteria = $state.params.criteria;
-                $scope.items = MusicService.searchCollection($scope.criteria);
-            }]);
+    .controller('SearchCtrl',
+                ['$scope', 
+                 'MusicService', 
+                 '$state',
+                 function($scope, MusicService, $state){
+                     $scope.criteria = $state.params.criteria;
+                     MusicService.searchCollection($scope.criteria).then(function(results){
+                         $scope.items = results.data;
+                     });
+                 }])
+    .controller('AdminCtrl',
+                ['$scope', 'MusicService', '$state', function($scope, MusicService, $state){
+                    $scope.getMounts = function(){
+                        MusicService.getMounts().then(function(results){
+                            $scope.mounts = results.data;
+                        });
+                    };
+
+                    $scope.removeMount = function(mount_id){
+                        MusicService.removeMount(mount_id).then(function(results){
+                            console.log(results);
+                            $scope.getMounts();
+                        });
+                    };
+                    $scope.addMount = function(mount){
+                        MusicService.addMount(mount).then(function(results){
+                            console.log(results);
+                            $scope.getMounts();
+                        });
+                    };
+                    $scope.performScan = function(){
+                        MusicService.scanMounts().then(function(results){
+                            console.log(results);
+                        });
+                    };
+                    $scope.getMounts();
+                }]);

@@ -1,0 +1,9 @@
+<ul>
+    <li ng-show="mounts" ng-repeat="item in mounts">
+      {{item.mount}} <a ng-click="removeMount(item.id)">remove</a>
+    </li>
+</ul>
+
+<input ng-model="new_mount" type="text" > 
+<button ng-click="addMount(new_mount)">Add</button>
+<a ng-click="performScan()">Scan Collection</a>

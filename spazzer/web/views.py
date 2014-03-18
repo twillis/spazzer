@@ -109,6 +109,29 @@ def view_manage(context, request):
     return {"mounts": mounts, "message": msg}
 
 
+@view_config(context=models.AdminModel, name="mounts", renderer="json", route_name="api")
+def view_mounts(context, request):
+    return [{"mount": item.mount, "id": str(item.id)} for item in context.get_mounts()]
+
+
+@view_config(context=models.AdminModel, name="scan", renderer="json", route_name="api", request_method="POST")
+def scan_mounts(context, request):
+    result, msg = context.start_scan()
+    return {"errors": result, "message": msg}
+
+
+@view_config(context=models.AdminModel, name="add_mount", renderer="json", route_name="api", request_method="POST")
+def add_mount(context, request):
+    result, msg = context.add_mount(request.POST.get("mount"))
+    return {"result": result, "message": msg}
+
+
+@view_config(context=models.AdminModel, name="remove_mount", renderer="json", route_name="api", request_method="POST")
+def remove_mount(context, request):
+    print request.POST.get("mount")
+    context.remove_mount(request.POST.get("mount"))
+    return {"result": None, "message": None}
+    
 @view_config(context=models.CollectionModel, name="data", renderer="json", route_name="api")
 def view_artist(context, request):
     request.url_quote = quote
