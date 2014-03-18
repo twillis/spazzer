@@ -21,6 +21,10 @@ angular.module('spazzerApp')
                       return $http.get('/api/collection/detail', {params: {artist: artist}});
                   };
 
+                  this.searchCollection = function(criteria){
+                      return $http.get('/api/collection/search_json', {params: {criteria: criteria}});
+                  };
+
                   return this;
               }])
     .factory('Audio', function($document){
@@ -175,6 +179,18 @@ angular.module('spazzerApp')
                      $scope.isSelected = function(idx){
                          return $scope.start && $scope.start === idx;
                      };
+
+                     $scope.showSearch = function(){
+                         $scope.searching = true;
+                     };
+
+                     $scope.showBrowse = function(){
+                         $scope.searching = false;
+                     };
+
+                     $scope.doSearch = function(){
+                         $state.go('collection.search', {criteria: $scope.criteria});
+                     };
                  }])
     .controller('ListCtrl',
                 ['$scope', 
@@ -210,4 +226,12 @@ angular.module('spazzerApp')
                      MusicService.getArtistDetail($state.params.artist).then(function(results){
                          $scope.selectedArtistAlbums = results.data.items;
                      });
-                 }]);
+                 }])
+.controller('SearchCtrl',
+            ['$scope', 
+             'MusicService', 
+             '$state',
+            function($scope, MusicService, $state){
+                $scope.criteria = $state.params.criteria;
+                $scope.items = MusicService.searchCollection($scope.criteria);
+            }]);

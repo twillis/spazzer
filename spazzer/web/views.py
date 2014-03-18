@@ -33,18 +33,14 @@ keys.append("[#]")
 
 def get_search_results(context, request):
     request.url_quote = quote
-    if "POST" in request.params:
-        criteria = request.params.get("criteria")
+    criteria = request.params.get("criteria")
+    if criteria:
         artists = context.search_artists(criteria)
         albums = context.search_albums(criteria)
         tracks = context.search_tracks(criteria)
+        return dict(artists=artists, albums=albums, tracks=tracks, criteria=criteria)
     else:
-        artists = []
-        albums = []
-        tracks = []
-        criteria = None
-    return dict(artists=artists, albums=albums, tracks=tracks, criteria=criteria)
-
+        return dict(artists=[], albums=[], tracks=[], criteria=criteria)
 @view_config(context=models.CollectionModel, name="search",
              renderer="search.mako", route_name="api")
 def search(context, request):

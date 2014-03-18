@@ -3,8 +3,16 @@
   <!-- could be a search/browse toggle maybe? -->
   <div class="small-12 columns">
     <ul class="list-index">
-      <li ng-repeat="idx in ['all','#','a','b','c','d','e','f','g','h','i','j','k','l','m','n','o','p','q','r','s','t','u','v','w','x','y','z']">
+      <li ng-hide="searching" ng-repeat="idx in ['all','#','a','b','c','d','e','f','g','h','i','j','k','l','m','n','o','p','q','r','s','t','u','v','w','x','y','z']">
 	<a ng-class="{selected: isSelected(idx)}"ng-click="showSet(idx)">{{idx}}</a>
+      </li>
+      <li ng-hide="searching">
+        <a ng-click="showSearch()">search</a>
+      </li>
+      <li ng-show="searching">
+	<input ng-model="criteria" type="text">
+        <button ng-click="doSearch()">search</button>
+	<a ng-click="showBrowse()">browse</a>
       </li>
     </ul>    
   </div>

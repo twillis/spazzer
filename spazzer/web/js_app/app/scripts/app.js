@@ -11,6 +11,10 @@ angular.module('spazzerApp', [
                          {url: '/list',
                           templateUrl: 'views/main.html',
                           controller: 'MainCtrl'});
+    $stateProvider.state('collection.search',
+                         {url: '/search/:criteria',
+                          templateUrl: 'views/results.html',
+                          controller: 'SearchCtrl'});
     $stateProvider.state('collection.list',
                          {url:'/:start',
                          templateUrl: 'views/list.html',
